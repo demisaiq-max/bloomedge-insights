@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { products } from '../data';
+import { useStore } from '../context/StoreContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 const Shop: React.FC = () => {
+  const { products, categories: storeCategories } = useStore();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   
-  // Get unique categories and counts
-  const categories = ['All', ...Array.from(new Set(products.map(p => p.category)))];
+  // Use categories from context
+  const categories = ['All', ...storeCategories.map(c => c.name)];
+  
   const getCount = (cat: string) => cat === 'All' ? products.length : products.filter(p => p.category === cat).length;
 
   const filteredProducts = selectedCategory === 'All' 
@@ -24,7 +26,7 @@ const Shop: React.FC = () => {
         <aside className="w-full md:w-64 flex-shrink-0">
           <h2 className="text-xl font-display font-bold mb-4 text-gray-900 dark:text-white uppercase tracking-wider">Categories</h2>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-8">
-            <ul className="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700 text-sm max-h-96 overflow-y-auto">
               {categories.map(cat => (
                 <li key={cat}>
                     <button 

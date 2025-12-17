@@ -15,7 +15,8 @@ const Header: React.FC = () => {
           </div>
           <div className="flex space-x-4">
             <span className="flex items-center"><span className="material-icons-outlined text-[14px] mr-1">local_shipping</span> Free Shipping over $150</span>
-            <span>Currency: USD</span>
+            {/* Kept the top link as a secondary access point */}
+            <Link to="/admin" className="hover:text-primary transition-colors">Admin Portal</Link>
           </div>
         </div>
       </div>
@@ -37,6 +38,13 @@ const Header: React.FC = () => {
               <Link to="/shop" className="hover:text-primary transition-colors">PRODUCE</Link>
               <Link to="/shop" className="hover:text-primary transition-colors">ORGANIC</Link>
               <Link to="/shop" className="hover:text-primary transition-colors text-red-500">SALE</Link>
+              
+              {/* Product Management Link added to main nav as requested */}
+              <div className="h-5 w-px bg-gray-300 dark:bg-gray-600 mx-2"></div>
+              <Link to="/admin/products" className="flex items-center gap-2 text-gray-900 dark:text-white font-bold hover:text-primary transition-colors">
+                  <span className="material-icons-outlined text-lg">inventory_2</span>
+                  PRODUCT MANAGEMENT
+              </Link>
             </nav>
             <div className="flex items-center space-x-4">
               <button className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { products } from '../data';
+import { useStore } from '../context/StoreContext';
 import { Product } from '../types';
 
 // Reusable Product Carousel Component
@@ -38,6 +38,8 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({ title, products, clas
       scrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
     }
   };
+
+  if (products.length === 0) return null;
 
   return (
     <section 
@@ -111,9 +113,11 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({ title, products, clas
 };
 
 const Home: React.FC = () => {
-  // Data preparation with duplicated items for carousel effect
-  const bestsellers = [...products, ...products, ...products]; 
-  const newArrivals = [products[6], products[7], products[0], products[6], products[7], products[0], products[6], products[7], products[0]];
+  const { products } = useStore();
+  
+  // Create derived lists safely
+  const bestsellers = products.length > 0 ? [...products, ...products].slice(0, 10) : []; 
+  const newArrivals = products.length > 0 ? [...products].reverse().slice(0, 10) : [];
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900">
@@ -139,59 +143,26 @@ const Home: React.FC = () => {
               </div>
             </div>
             
-            {/* Brands Section - EXACT MATCH to requested layout (3 Top, 2 Bottom) */}
              <div className="w-full max-w-2xl mx-auto">
                 <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-3xl p-8 shadow-sm border border-white/50">
                     <div className="flex flex-col gap-8">
-                        {/* Top Row: 3 Logos */}
                         <div className="grid grid-cols-3 gap-6 items-center justify-items-center">
-                            {/* Almarai */}
                             <Link to="/shop" className="w-full flex justify-center hover:scale-105 transition-transform duration-300">
-                                <img 
-                                    src="https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Almarai_logo.svg/1200px-Almarai_logo.svg.png" 
-                                    alt="Almarai" 
-                                    className="h-16 md:h-20 w-auto object-contain" 
-                                />
+                                <img src="https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Almarai_logo.svg/1200px-Almarai_logo.svg.png" alt="Almarai" className="h-16 md:h-20 w-auto object-contain" />
                             </Link>
-                            {/* LATBRI */}
                             <Link to="/shop" className="w-full flex justify-center hover:scale-105 transition-transform duration-300">
-                                <img 
-                                    src="https://placehold.co/400x200/ffffff/0055a5.png?text=LATBRI&font=montserrat" 
-                                    alt="Latbri" 
-                                    className="h-16 md:h-20 w-auto object-contain mix-blend-multiply dark:mix-blend-normal" 
-                                />
+                                <img src="https://placehold.co/400x200/ffffff/0055a5.png?text=LATBRI&font=montserrat" alt="Latbri" className="h-16 md:h-20 w-auto object-contain mix-blend-multiply dark:mix-blend-normal" />
                             </Link>
-                            {/* KraftHeinz */}
                             <Link to="/shop" className="w-full flex justify-center hover:scale-105 transition-transform duration-300">
-                                <img 
-                                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Kraft_Heinz_Company_logo.svg/1200px-Kraft_Heinz_Company_logo.svg.png" 
-                                    alt="KraftHeinz" 
-                                    className="h-12 md:h-14 w-auto object-contain" 
-                                />
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Kraft_Heinz_Company_logo.svg/1200px-Kraft_Heinz_Company_logo.svg.png" alt="KraftHeinz" className="h-12 md:h-14 w-auto object-contain" />
                             </Link>
                         </div>
-                        
-                        {/* Bottom Row: 2 Logos */}
                         <div className="flex justify-center gap-12 md:gap-20 items-center">
-                            {/* Galbani */}
                             <Link to="/shop" className="hover:scale-105 transition-transform duration-300">
-                                <img 
-                                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Galbani_logo.svg/1200px-Galbani_logo.svg.png" 
-                                    alt="Galbani" 
-                                    className="h-16 md:h-20 w-auto object-contain" 
-                                />
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Galbani_logo.svg/1200px-Galbani_logo.svg.png" alt="Galbani" className="h-16 md:h-20 w-auto object-contain" />
                             </Link>
-                            {/* Frico */}
                             <Link to="/shop" className="hover:scale-105 transition-transform duration-300">
-                                <img 
-                                    src="https://upload.wikimedia.org/wikipedia/en/thumb/2/29/Frico_logo.svg/1200px-Frico_logo.svg.png" 
-                                    onError={(e) => {
-                                        // Fallback if the wikimedia link is protected
-                                        (e.target as HTMLImageElement).src = "https://placehold.co/400x200/ffffff/e30613.png?text=Frico&font=playfair-display";
-                                    }}
-                                    alt="Frico" 
-                                    className="h-16 md:h-20 w-auto object-contain" 
-                                />
+                                <img src="https://upload.wikimedia.org/wikipedia/en/thumb/2/29/Frico_logo.svg/1200px-Frico_logo.svg.png" onError={(e) => {(e.target as HTMLImageElement).src = "https://placehold.co/400x200/ffffff/e30613.png?text=Frico&font=playfair-display";}} alt="Frico" className="h-16 md:h-20 w-auto object-contain" />
                             </Link>
                         </div>
                     </div>
