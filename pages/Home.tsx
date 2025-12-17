@@ -4,7 +4,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useStore } from '../context/StoreContext';
 import { Product } from '../types';
-import brandLogos from '@/assets/brand-logos.png';
+import brandLogos from '@/src/assets/brand-logos.png';
 
 // Reusable Product Carousel Component
 interface ProductCarouselProps {
