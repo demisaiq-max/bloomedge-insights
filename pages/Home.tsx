@@ -201,7 +201,8 @@ const Home: React.FC = () => {
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  className="w-full px-4 py-3 rounded-lg text-gray-900 border-none focus:ring-2 focus:ring-white/50"
+                  className="w-full px-4 py-3 rounded-lg border-none focus:ring-2 focus:outline-none"
+                  style={{ backgroundColor: '#ffffff', color: '#1f2937' }}
                 />
                 <button
                   type="button"
