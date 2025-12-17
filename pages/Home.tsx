@@ -189,26 +189,28 @@ const Home: React.FC = () => {
       />
 
       {/* Newsletter */}
-      <section className="py-8 bg-background">
+      <section className="py-8 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
-          <div className="rounded-2xl p-8 md:p-12 text-center bg-card text-card-foreground border border-border shadow-sm">
-            <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">Join the BloomEdge Family</h2>
-            <p className="mb-8 max-w-xl mx-auto text-muted-foreground">
-              Subscribe to our newsletter for exclusive deals, new arrivals, and healthy living tips.
-            </p>
-            <form className="flex flex-col sm:flex-row justify-center max-w-md mx-auto gap-2">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="w-full px-4 py-3 rounded-lg bg-background text-foreground border border-input focus:ring-2 focus:ring-ring"
-              />
-              <button
-                type="button"
-                className="px-6 py-3 rounded-lg font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-              >
-                Subscribe
-              </button>
-            </form>
+          <div className="rounded-2xl p-8 md:p-12 text-center text-white relative overflow-hidden" style={{ background: 'linear-gradient(to right, #22c55e, #3b82f6)' }}>
+            <div className="relative z-10">
+              <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">Join the BloomEdge Family</h2>
+              <p className="mb-8 max-w-xl mx-auto opacity-90">
+                Subscribe to our newsletter for exclusive deals, new arrivals, and healthy living tips.
+              </p>
+              <form className="flex flex-col sm:flex-row justify-center max-w-md mx-auto gap-2">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="w-full px-4 py-3 rounded-lg text-gray-900 border-none focus:ring-2 focus:ring-white/50"
+                />
+                <button
+                  type="button"
+                  className="bg-gray-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors"
+                >
+                  Subscribe
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </section>
