@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useStore } from '../context/StoreContext';
 import { Product } from '../types';
+import brandLogos from '@/assets/brand-logos.png';
 
 // Reusable Product Carousel Component
 interface ProductCarouselProps {
@@ -144,29 +145,9 @@ const Home: React.FC = () => {
             </div>
             
              <div className="w-full max-w-2xl mx-auto">
-                <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-3xl p-8 shadow-sm border border-white/50">
-                    <div className="flex flex-col gap-8">
-                        <div className="grid grid-cols-3 gap-6 items-center justify-items-center">
-                            <Link to="/shop" className="w-full flex justify-center hover:scale-105 transition-transform duration-300">
-                                <img src="https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Almarai_logo.svg/1200px-Almarai_logo.svg.png" alt="Almarai" className="h-16 md:h-20 w-auto object-contain" />
-                            </Link>
-                            <Link to="/shop" className="w-full flex justify-center hover:scale-105 transition-transform duration-300">
-                                <img src="https://placehold.co/400x200/ffffff/0055a5.png?text=LATBRI&font=montserrat" alt="Latbri" className="h-16 md:h-20 w-auto object-contain mix-blend-multiply dark:mix-blend-normal" />
-                            </Link>
-                            <Link to="/shop" className="w-full flex justify-center hover:scale-105 transition-transform duration-300">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Kraft_Heinz_Company_logo.svg/1200px-Kraft_Heinz_Company_logo.svg.png" alt="KraftHeinz" className="h-12 md:h-14 w-auto object-contain" />
-                            </Link>
-                        </div>
-                        <div className="flex justify-center gap-12 md:gap-20 items-center">
-                            <Link to="/shop" className="hover:scale-105 transition-transform duration-300">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Galbani_logo.svg/1200px-Galbani_logo.svg.png" alt="Galbani" className="h-16 md:h-20 w-auto object-contain" />
-                            </Link>
-                            <Link to="/shop" className="hover:scale-105 transition-transform duration-300">
-                                <img src="https://upload.wikimedia.org/wikipedia/en/thumb/2/29/Frico_logo.svg/1200px-Frico_logo.svg.png" onError={(e) => {(e.target as HTMLImageElement).src = "https://placehold.co/400x200/ffffff/e30613.png?text=Frico&font=playfair-display";}} alt="Frico" className="h-16 md:h-20 w-auto object-contain" />
-                            </Link>
-                        </div>
-                    </div>
-                </div>
+                <Link to="/shop" className="block bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-3xl p-8 shadow-sm border border-white/50 hover:scale-[1.02] transition-transform duration-300">
+                  <img src={brandLogos} alt="Our Partner Brands - Almarai, Latbri, KraftHeinz, Galbani, Frico" className="w-full h-auto object-contain" />
+                </Link>
              </div>
           </div>
         </div>
