@@ -7,9 +7,8 @@ const Footer: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           <div>
-            <div className="flex items-center space-x-2 mb-6">
-              <span className="material-icons text-primary text-3xl">eco</span>
-              <span className="font-display font-bold text-xl tracking-tight">BloomEdge</span>
+            <div className="mb-6">
+              <img src="/logo.png" alt="BloomEdge Enterprises" className="h-10 w-auto brightness-0 invert" />
             </div>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
               BloomEdge Enterprises connects you with the finest products globally. We are dedicated to quality, sustainability, and exceptional service.

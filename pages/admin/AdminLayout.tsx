@@ -9,8 +9,8 @@ const AdminLayout: React.FC = () => {
     <div className="min-h-screen flex bg-gray-50 dark:bg-gray-900 font-sans">
       <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 hidden md:flex flex-col">
         <div className="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-700">
-           <span className="material-icons text-primary text-3xl mr-2">eco</span>
-           <span className="font-bold text-lg text-gray-900 dark:text-white">BloomEdge<span className="font-normal text-gray-400">Admin</span></span>
+           <img src="/logo.png" alt="BloomEdge Enterprises" className="h-8 w-auto mr-2" />
+           <span className="font-normal text-gray-400 text-sm">Admin</span>
         </div>
         <nav className="flex-1 p-4 space-y-1">
            <Link to="/admin/dashboard" className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${isActive('/admin/dashboard') ? 'bg-primary/10 text-primary' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
