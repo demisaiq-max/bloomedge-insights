@@ -7,8 +7,15 @@ import { useStore } from '../context/StoreContext';
 const Cart: React.FC = () => {
   const { cart, removeFromCart, updateCartQuantity, cartTotal, cartItemCount } = useStore();
   
-  const tax = cartTotal * 0.05; // 5% tax
-  const total = cartTotal + tax;
+  // Calculate shipping and tax from cart items
+  const totalShipping = cart.reduce((sum, item) => sum + ((item.shippingCost ?? 0) * item.quantity), 0);
+  const totalTax = cart.reduce((sum, item) => {
+    const itemPrice = (item.salePrice ?? item.price) * item.quantity;
+    const taxAmount = itemPrice * ((item.taxPercentage ?? 0) / 100);
+    return sum + taxAmount;
+  }, 0);
+  
+  const total = cartTotal + totalShipping + totalTax;
 
   const handleIncrement = (productId: string, currentQuantity: number) => {
     updateCartQuantity(productId, currentQuantity + 1);
@@ -123,12 +130,18 @@ const Cart: React.FC = () => {
                         </div>
                         <div className="flex justify-between text-gray-600 dark:text-gray-400">
                           <span>Shipping</span> 
-                          <span className="font-medium text-green-500">Free</span>
+                          {totalShipping > 0 ? (
+                            <span className="font-medium text-gray-900 dark:text-white">Rs. {totalShipping.toLocaleString()}</span>
+                          ) : (
+                            <span className="font-medium text-green-500">Free</span>
+                          )}
                         </div>
-                        <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                          <span>Tax (Est.)</span> 
-                          <span className="font-medium text-gray-900 dark:text-white">Rs. {tax.toLocaleString()}</span>
-                        </div>
+                        {totalTax > 0 && (
+                          <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                            <span>Tax</span> 
+                            <span className="font-medium text-gray-900 dark:text-white">Rs. {totalTax.toLocaleString()}</span>
+                          </div>
+                        )}
                         <div className="border-t border-gray-200 dark:border-gray-700 my-4"></div>
                         <div className="flex justify-between items-center">
                             <span className="text-lg font-bold text-gray-900 dark:text-white">Total</span>

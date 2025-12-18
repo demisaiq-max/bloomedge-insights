@@ -128,6 +128,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       isNewArrival: p.is_new_arrival ?? false,
       stock: p.stock,
       description: p.description,
+      shippingCost: (p as any).shipping_cost ? Number((p as any).shipping_cost) : 0,
+      taxPercentage: (p as any).tax_percentage ? Number((p as any).tax_percentage) : 0,
     }));
     
     setProducts(mappedProducts);
@@ -241,6 +243,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         is_bestseller: product.isBestseller ?? false,
         is_new_arrival: product.isNewArrival ?? false,
         stock: product.stock ?? 0,
+        shipping_cost: product.shippingCost ?? 0,
+        tax_percentage: product.taxPercentage ?? 0,
       });
     
     if (error) {
@@ -264,6 +268,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (updatedProduct.isBestseller !== undefined) updateData.is_bestseller = updatedProduct.isBestseller;
     if (updatedProduct.isNewArrival !== undefined) updateData.is_new_arrival = updatedProduct.isNewArrival;
     if (updatedProduct.stock !== undefined) updateData.stock = updatedProduct.stock;
+    if (updatedProduct.shippingCost !== undefined) updateData.shipping_cost = updatedProduct.shippingCost;
+    if (updatedProduct.taxPercentage !== undefined) updateData.tax_percentage = updatedProduct.taxPercentage;
 
     const { error } = await supabase
       .from('products')
