@@ -15,6 +15,8 @@ export interface Product {
   isNewArrival?: boolean;
   stock?: number | null;
   description?: string | null;
+  shippingCost?: number | null;
+  taxPercentage?: number | null;
 }
 
 export interface CartItem extends Product {

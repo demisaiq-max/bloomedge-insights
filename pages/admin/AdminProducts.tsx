@@ -26,7 +26,9 @@ const AdminProducts: React.FC = () => {
     stock: 0,
     description: '',
     isBestseller: false,
-    isNewArrival: false
+    isNewArrival: false,
+    shippingCost: 0,
+    taxPercentage: 0
   });
 
   const categoryNames = ['All', ...categories.map(c => c.name)];
@@ -44,7 +46,9 @@ const AdminProducts: React.FC = () => {
         ...product,
         images: product.images || [],
         isBestseller: product.isBestseller ?? false,
-        isNewArrival: product.isNewArrival ?? false
+        isNewArrival: product.isNewArrival ?? false,
+        shippingCost: product.shippingCost ?? 0,
+        taxPercentage: product.taxPercentage ?? 0
       });
     } else {
       setEditingProduct(null);
@@ -58,7 +62,9 @@ const AdminProducts: React.FC = () => {
         stock: 10,
         description: '',
         isBestseller: false,
-        isNewArrival: false
+        isNewArrival: false,
+        shippingCost: 0,
+        taxPercentage: 0
       });
     }
     setIsModalOpen(true);
@@ -343,6 +349,29 @@ const AdminProducts: React.FC = () => {
                                 value={formData.stock ?? 0} onChange={e => setFormData({...formData, stock: parseInt(e.target.value)})} />
                             </div>
                         </div>
+                        
+                        {/* Shipping & Tax Options */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                  Shipping Cost (Rs) <span className="text-xs text-gray-400">(optional)</span>
+                                </label>
+                                <input type="number" step="0.01" min="0" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                    placeholder="0 for free shipping"
+                                    value={formData.shippingCost || ''} 
+                                    onChange={e => setFormData({...formData, shippingCost: e.target.value ? parseFloat(e.target.value) : 0})} />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Tax % <span className="text-xs text-gray-400">(0-100)</span>
+                              </label>
+                              <input type="number" step="0.01" min="0" max="100" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                placeholder="0 for no tax"
+                                value={formData.taxPercentage || ''} 
+                                onChange={e => setFormData({...formData, taxPercentage: e.target.value ? parseFloat(e.target.value) : 0})} />
+                            </div>
+                        </div>
+
                         <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
                           <textarea className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" rows={3}

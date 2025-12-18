@@ -16,7 +16,14 @@ const Checkout: React.FC = () => {
   const [state, setState] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [phone, setPhone] = useState('');
-  const shippingCost = 250;
+
+  // Calculate shipping and tax from cart items (same logic as Cart)
+  const totalShipping = cart.reduce((sum, item) => sum + ((item.shippingCost ?? 0) * item.quantity), 0);
+  const totalTax = cart.reduce((sum, item) => {
+    const itemPrice = (item.salePrice ?? item.price) * item.quantity;
+    const taxAmount = itemPrice * ((item.taxPercentage ?? 0) / 100);
+    return sum + taxAmount;
+  }, 0);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -36,7 +43,7 @@ const Checkout: React.FC = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const total = cartTotal + shippingCost;
+  const total = cartTotal + totalShipping + totalTax;
 
   if (cart.length === 0) {
     return (
@@ -162,21 +169,23 @@ const Checkout: React.FC = () => {
                      </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
-                    <h2 className="text-xl font-bold mb-6">Shipping Method</h2>
-                    <div className="space-y-4">
-                        <div className="relative flex items-center justify-between border border-primary bg-blue-50 dark:bg-blue-900/10 rounded-lg p-4 cursor-pointer">
-                             <div className="flex items-center">
-                                 <input type="radio" name="shipping" className="h-4 w-4 text-primary focus:ring-primary" defaultChecked />
-                                 <div className="ml-3 text-sm">
-                                     <span className="block font-medium text-gray-900 dark:text-white">Standard Shipping</span>
-                                     <span className="block text-gray-500">3-5 business days</span>
-                                 </div>
-                             </div>
-                             <span className="font-semibold text-gray-900 dark:text-white">Rs. {shippingCost.toLocaleString()}</span>
-                        </div>
-                    </div>
-                </div>
+                {totalShipping > 0 && (
+                  <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+                      <h2 className="text-xl font-bold mb-6">Shipping Method</h2>
+                      <div className="space-y-4">
+                          <div className="relative flex items-center justify-between border border-primary bg-blue-50 dark:bg-blue-900/10 rounded-lg p-4 cursor-pointer">
+                               <div className="flex items-center">
+                                   <input type="radio" name="shipping" className="h-4 w-4 text-primary focus:ring-primary" defaultChecked />
+                                   <div className="ml-3 text-sm">
+                                       <span className="block font-medium text-gray-900 dark:text-white">Standard Shipping</span>
+                                       <span className="block text-gray-500">3-5 business days</span>
+                                   </div>
+                               </div>
+                               <span className="font-semibold text-gray-900 dark:text-white">Rs. {totalShipping.toLocaleString()}</span>
+                          </div>
+                      </div>
+                  </div>
+                )}
                 
                 <div className="flex justify-end gap-4 mt-8">
                     <Link to="/cart" className="text-blue-500 hover:text-blue-700 font-medium text-sm flex items-center">Return to Cart</Link>
@@ -220,8 +229,18 @@ const Checkout: React.FC = () => {
                         </div>
                         <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                             <p>Shipping</p>
-                            <p>Rs. {shippingCost.toLocaleString()}</p>
+                            {totalShipping > 0 ? (
+                              <p>Rs. {totalShipping.toLocaleString()}</p>
+                            ) : (
+                              <p className="text-green-500 font-medium">Free</p>
+                            )}
                         </div>
+                        {totalTax > 0 && (
+                          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                              <p>Tax</p>
+                              <p>Rs. {totalTax.toLocaleString()}</p>
+                          </div>
+                        )}
                         <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-white pt-4 border-t border-gray-200">
                             <p>Total</p>
                             <p className="text-2xl text-primary">Rs. {total.toLocaleString()}</p>
