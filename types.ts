@@ -11,6 +11,8 @@ export interface Product {
   reviews?: number;
   isNew?: boolean;
   isOrganic?: boolean;
+  isBestseller?: boolean;
+  isNewArrival?: boolean;
   stock?: number | null;
   description?: string | null;
 }

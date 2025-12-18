@@ -24,7 +24,9 @@ const AdminProducts: React.FC = () => {
     image: '',
     images: [],
     stock: 0,
-    description: ''
+    description: '',
+    isBestseller: false,
+    isNewArrival: false
   });
 
   const categoryNames = ['All', ...categories.map(c => c.name)];
@@ -40,7 +42,9 @@ const AdminProducts: React.FC = () => {
       setEditingProduct(product);
       setFormData({
         ...product,
-        images: product.images || []
+        images: product.images || [],
+        isBestseller: product.isBestseller ?? false,
+        isNewArrival: product.isNewArrival ?? false
       });
     } else {
       setEditingProduct(null);
@@ -52,7 +56,9 @@ const AdminProducts: React.FC = () => {
         image: '',
         images: [],
         stock: 10,
-        description: ''
+        description: '',
+        isBestseller: false,
+        isNewArrival: false
       });
     }
     setIsModalOpen(true);
@@ -341,6 +347,31 @@ const AdminProducts: React.FC = () => {
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
                           <textarea className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" rows={3}
                             value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})}></textarea>
+                        </div>
+                        
+                        {/* Home Page Display Options */}
+                        <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700/50">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Home Page Display</label>
+                          <div className="flex flex-wrap gap-4">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={formData.isBestseller ?? false}
+                                onChange={e => setFormData({...formData, isBestseller: e.target.checked})}
+                                className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                              />
+                              <span className="text-sm text-gray-700 dark:text-gray-300">Bestseller</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={formData.isNewArrival ?? false}
+                                onChange={e => setFormData({...formData, isNewArrival: e.target.checked})}
+                                className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                              />
+                              <span className="text-sm text-gray-700 dark:text-gray-300">New Arrival</span>
+                            </label>
+                          </div>
                         </div>
                         
                         {/* Image Picker */}

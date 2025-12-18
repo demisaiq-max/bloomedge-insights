@@ -123,6 +123,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       images: (p as unknown as { images?: string[] }).images || [],
       isNew: p.is_new ?? false,
       isOrganic: p.is_organic ?? false,
+      isBestseller: (p as unknown as { is_bestseller?: boolean }).is_bestseller ?? false,
+      isNewArrival: (p as unknown as { is_new_arrival?: boolean }).is_new_arrival ?? false,
       stock: p.stock,
       description: p.description,
     }));
@@ -235,6 +237,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         description: product.description,
         is_new: product.isNew ?? false,
         is_organic: product.isOrganic ?? false,
+        is_bestseller: product.isBestseller ?? false,
+        is_new_arrival: product.isNewArrival ?? false,
         stock: product.stock ?? 0,
       });
     
@@ -256,6 +260,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (updatedProduct.description !== undefined) updateData.description = updatedProduct.description;
     if (updatedProduct.isNew !== undefined) updateData.is_new = updatedProduct.isNew;
     if (updatedProduct.isOrganic !== undefined) updateData.is_organic = updatedProduct.isOrganic;
+    if (updatedProduct.isBestseller !== undefined) updateData.is_bestseller = updatedProduct.isBestseller;
+    if (updatedProduct.isNewArrival !== undefined) updateData.is_new_arrival = updatedProduct.isNewArrival;
     if (updatedProduct.stock !== undefined) updateData.stock = updatedProduct.stock;
 
     const { error } = await supabase
