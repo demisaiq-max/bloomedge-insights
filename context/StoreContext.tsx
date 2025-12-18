@@ -12,6 +12,7 @@ interface StoreContextType {
   updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   addCategory: (category: Omit<Category, 'id'>) => Promise<void>;
+  updateCategory: (id: string, category: Partial<Category>) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
   addToCart: (product: Product, quantity?: number) => void;
   removeFromCart: (productId: string) => void;
@@ -302,6 +303,23 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const updateCategory = async (id: string, updatedCategory: Partial<Category>) => {
+    const updateData: Record<string, unknown> = {};
+    if (updatedCategory.name !== undefined) updateData.name = updatedCategory.name;
+    if (updatedCategory.slug !== undefined) updateData.slug = updatedCategory.slug;
+    if (updatedCategory.image !== undefined) updateData.image = updatedCategory.image;
+
+    const { error } = await supabase
+      .from('categories')
+      .update(updateData)
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error updating category:', error);
+      throw error;
+    }
+  };
+
   const deleteCategory = async (id: string) => {
     const { error } = await supabase
       .from('categories')
@@ -325,6 +343,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       updateProduct, 
       deleteProduct,
       addCategory,
+      updateCategory,
       deleteCategory,
       addToCart,
       removeFromCart,
