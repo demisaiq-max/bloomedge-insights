@@ -120,9 +120,9 @@ const Home: React.FC = () => {
   const [subscribing, setSubscribing] = useState(false);
   const [subscribeMessage, setSubscribeMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   
-  // Create derived lists safely
-  const bestsellers = products.length > 0 ? [...products, ...products].slice(0, 10) : []; 
-  const newArrivals = products.length > 0 ? [...products].reverse().slice(0, 10) : [];
+  // Filter products based on flags
+  const bestsellers = products.filter(p => p.isBestseller);
+  const newArrivals = products.filter(p => p.isNewArrival);
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
