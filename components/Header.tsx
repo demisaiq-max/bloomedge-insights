@@ -5,7 +5,6 @@ import { useStore } from '../context/StoreContext';
 const Header: React.FC = () => {
   const location = useLocation();
   const { cartItemCount } = useStore();
-  const isDark = false; // We can implement theme context later
 
   return (
     <>
@@ -17,7 +16,6 @@ const Header: React.FC = () => {
           </div>
           <div className="flex space-x-4">
             <span className="flex items-center"><span className="material-icons-outlined text-[14px] mr-1">local_shipping</span> Free Shipping over $150</span>
-            {/* Kept the top link as a secondary access point */}
             <Link to="/admin" className="hover:text-primary transition-colors">Admin Portal</Link>
           </div>
         </div>
@@ -35,11 +33,11 @@ const Header: React.FC = () => {
               </div>
             </Link>
             <nav className="hidden lg:flex items-center space-x-8 font-medium text-sm text-gray-700 dark:text-gray-200">
-              <Link to="/shop" className="hover:text-primary transition-colors">DAIRY</Link>
-              <Link to="/shop" className="hover:text-primary transition-colors">PANTRY</Link>
-              <Link to="/shop" className="hover:text-primary transition-colors">PRODUCE</Link>
-              <Link to="/shop" className="hover:text-primary transition-colors">ORGANIC</Link>
-              <Link to="/shop" className="hover:text-primary transition-colors text-red-500">SALE</Link>
+              <Link to="/shop?category=Dairy" className="hover:text-primary transition-colors">DAIRY</Link>
+              <Link to="/shop?category=Pantry" className="hover:text-primary transition-colors">PANTRY</Link>
+              <Link to="/shop?category=Vegetables" className="hover:text-primary transition-colors">PRODUCE</Link>
+              <Link to="/shop?filter=organic" className="hover:text-primary transition-colors">ORGANIC</Link>
+              <Link to="/shop?filter=sale" className="hover:text-primary transition-colors text-red-500 font-bold">SALE</Link>
               
               {/* Product Management Link added to main nav as requested */}
               <div className="h-5 w-px bg-gray-300 dark:bg-gray-600 mx-2"></div>

@@ -118,6 +118,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       name: p.name,
       category: p.category,
       price: Number(p.price),
+      salePrice: (p as unknown as { sale_price?: number | null }).sale_price ? Number((p as unknown as { sale_price?: number | null }).sale_price) : null,
       image: p.image,
       images: (p as unknown as { images?: string[] }).images || [],
       isNew: p.is_new ?? false,
@@ -228,6 +229,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         name: product.name,
         category: product.category,
         price: product.price,
+        sale_price: product.salePrice || null,
         image: product.image,
         images: product.images || [],
         description: product.description,
@@ -248,6 +250,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (updatedProduct.name !== undefined) updateData.name = updatedProduct.name;
     if (updatedProduct.category !== undefined) updateData.category = updatedProduct.category;
     if (updatedProduct.price !== undefined) updateData.price = updatedProduct.price;
+    if (updatedProduct.salePrice !== undefined) updateData.sale_price = updatedProduct.salePrice || null;
     if (updatedProduct.image !== undefined) updateData.image = updatedProduct.image;
     if (updatedProduct.images !== undefined) updateData.images = updatedProduct.images;
     if (updatedProduct.description !== undefined) updateData.description = updatedProduct.description;

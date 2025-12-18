@@ -20,6 +20,7 @@ const AdminProducts: React.FC = () => {
     name: '',
     category: 'Vegetables',
     price: 0,
+    salePrice: null,
     image: '',
     images: [],
     stock: 0,
@@ -47,6 +48,7 @@ const AdminProducts: React.FC = () => {
         name: '',
         category: categories[0]?.name || 'Vegetables',
         price: 0,
+        salePrice: null,
         image: '',
         images: [],
         stock: 10,
@@ -242,8 +244,17 @@ const AdminProducts: React.FC = () => {
                         {product.category}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                      Rs {product.price.toLocaleString()}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <div className="flex flex-col">
+                        {product.salePrice && product.salePrice > 0 ? (
+                          <>
+                            <span className="text-red-500 font-bold">Rs {product.salePrice.toLocaleString()}</span>
+                            <span className="text-gray-400 line-through text-xs">Rs {product.price.toLocaleString()}</span>
+                          </>
+                        ) : (
+                          <span className="text-gray-700 dark:text-gray-300">Rs {product.price.toLocaleString()}</span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {stockStatus === 'out' ? (
@@ -305,10 +316,26 @@ const AdminProducts: React.FC = () => {
                                     value={formData.price} onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})} />
                             </div>
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Stock Quantity</label>
-                          <input type="number" min="0" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            value={formData.stock ?? 0} onChange={e => setFormData({...formData, stock: parseInt(e.target.value)})} />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                  Sale Price (Rs) <span className="text-xs text-gray-400">(optional)</span>
+                                </label>
+                                <input type="number" step="0.01" min="0" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                    placeholder="Leave empty for no sale"
+                                    value={formData.salePrice || ''} 
+                                    onChange={e => setFormData({...formData, salePrice: e.target.value ? parseFloat(e.target.value) : null})} />
+                                {formData.salePrice && formData.price && formData.salePrice < formData.price && (
+                                  <p className="text-xs text-green-600 mt-1">
+                                    {Math.round(((formData.price - formData.salePrice) / formData.price) * 100)}% discount
+                                  </p>
+                                )}
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Stock Quantity</label>
+                              <input type="number" min="0" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                value={formData.stock ?? 0} onChange={e => setFormData({...formData, stock: parseInt(e.target.value)})} />
+                            </div>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
