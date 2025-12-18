@@ -1,9 +1,62 @@
-import React from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { supabase } from '@/src/integrations/supabase/client';
+import { User } from '@supabase/supabase-js';
 
 const AdminLayout: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const isActive = (path: string) => location.pathname.includes(path);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f9fafb' }}>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#10b981' }}></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f9fafb' }}>
+        <div className="text-center p-8 rounded-lg shadow-lg max-w-md" style={{ backgroundColor: '#ffffff' }}>
+          <span className="material-icons text-6xl mb-4" style={{ color: '#f59e0b' }}>lock</span>
+          <h2 className="text-2xl font-bold mb-2" style={{ color: '#111827' }}>Authentication Required</h2>
+          <p className="mb-6" style={{ color: '#6b7280' }}>
+            You need to be logged in to access the admin panel. Please log in to manage products and categories.
+          </p>
+          <Link 
+            to="/login" 
+            className="inline-block px-6 py-3 rounded-lg font-bold transition-all"
+            style={{ backgroundColor: '#10b981', color: '#ffffff' }}
+          >
+            Go to Login
+          </Link>
+          <div className="mt-4">
+            <Link to="/" className="text-sm" style={{ color: '#6b7280' }}>
+              ← Back to Store
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-gray-50 dark:bg-gray-900 font-sans">
@@ -30,13 +83,32 @@ const AdminLayout: React.FC = () => {
              </div>
            </div>
         </nav>
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-3">
+            <div 
+              className="h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold"
+              style={{ backgroundColor: '#10b981', color: '#ffffff' }}
+            >
+              {user.email?.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user.email}</p>
+              <p className="text-xs text-gray-500">Admin</p>
+            </div>
+          </div>
+        </div>
       </aside>
       <main className="flex-1 overflow-auto">
         <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 sticky top-0 z-40">
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">Admin Portal</h1>
             <div className="flex items-center gap-4">
                 <Link to="/" className="text-sm text-gray-500 hover:text-primary">View Store</Link>
-                <div className="h-8 w-8 bg-primary rounded-full text-white flex items-center justify-center font-bold">A</div>
+                <div 
+                  className="h-8 w-8 rounded-full flex items-center justify-center font-bold"
+                  style={{ backgroundColor: '#10b981', color: '#ffffff' }}
+                >
+                  {user.email?.charAt(0).toUpperCase()}
+                </div>
             </div>
         </header>
         <div className="p-6">
