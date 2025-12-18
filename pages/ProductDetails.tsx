@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -9,6 +9,9 @@ const ProductDetails: React.FC = () => {
   const { products, addToCart } = useStore();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [flyingImage, setFlyingImage] = useState<string | null>(null);
+  const [flyPosition, setFlyPosition] = useState({ x: 0, y: 0 });
+  const imageRef = useRef<HTMLImageElement>(null);
   
   const product = products.find(p => p.id === id) || products[0];
 
@@ -22,12 +25,53 @@ const ProductDetails: React.FC = () => {
       : ['https://placehold.co/400x400/png?text=No+Image'];
 
   const handleAddToCart = () => {
-    addToCart(product, quantity);
+    // Get cart icon position
+    const cartIcon = document.querySelector('a[href="/cart"]');
+    const productImage = imageRef.current;
+    
+    if (cartIcon && productImage) {
+      const cartRect = cartIcon.getBoundingClientRect();
+      const imageRect = productImage.getBoundingClientRect();
+      
+      // Calculate fly distance
+      const flyX = cartRect.left - imageRect.left - imageRect.width / 2 + cartRect.width / 2;
+      const flyY = cartRect.top - imageRect.top - imageRect.height / 2 + cartRect.height / 2;
+      
+      setFlyPosition({ x: flyX, y: flyY });
+      setFlyingImage(allImages[selectedImageIndex]);
+      
+      // Add to cart after animation starts
+      setTimeout(() => {
+        addToCart(product, quantity);
+      }, 300);
+      
+      // Clear flying image after animation
+      setTimeout(() => {
+        setFlyingImage(null);
+      }, 600);
+    } else {
+      addToCart(product, quantity);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
       <Header />
+      
+      {/* Flying Image Animation */}
+      {flyingImage && (
+        <div 
+          className="fixed z-[100] w-20 h-20 rounded-full overflow-hidden shadow-lg pointer-events-none fly-to-cart"
+          style={{
+            top: imageRef.current?.getBoundingClientRect().top ?? 0,
+            left: imageRef.current?.getBoundingClientRect().left ?? 0,
+            '--fly-x': `${flyPosition.x}px`,
+            '--fly-y': `${flyPosition.y}px`,
+          } as React.CSSProperties}
+        >
+          <img src={flyingImage} alt="" className="w-full h-full object-cover" />
+        </div>
+      )}
       
       {/* Breadcrumb */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -51,7 +95,14 @@ const ProductDetails: React.FC = () => {
                 <div className="space-y-4">
                     {/* Main Image */}
                     <div className="aspect-square bg-gray-50 dark:bg-gray-700 rounded-xl flex items-center justify-center p-8 relative">
-                        {product.isOrganic && <span className="absolute top-4 left-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">Organic</span>}
+                        {product.isOrganic && (
+                          <span 
+                            className="absolute top-4 left-4 text-xs font-bold px-3 py-1 rounded-full uppercase"
+                            style={{ backgroundColor: '#22c55e', color: '#ffffff' }}
+                          >
+                            Organic
+                          </span>
+                        )}
                         
                         {/* Left Arrow */}
                         {allImages.length > 1 && (
@@ -64,6 +115,7 @@ const ProductDetails: React.FC = () => {
                         )}
                         
                         <img 
+                          ref={imageRef}
                           src={allImages[selectedImageIndex]} 
                           alt={product.name} 
                           className="w-full h-full object-contain" 
@@ -106,7 +158,7 @@ const ProductDetails: React.FC = () => {
 
                 {/* Info */}
                 <div>
-                    <h2 className="text-sm font-bold text-primary tracking-wide uppercase mb-2">BloomEdge Exclusive</h2>
+                    <h2 className="text-sm font-bold tracking-wide uppercase mb-2" style={{ color: '#10b981' }}>BloomEdge Exclusive</h2>
                     <h1 className="text-3xl md:text-4xl font-display font-bold text-gray-900 dark:text-white mb-4">{product.name}</h1>
                     
                     <div className="flex items-center gap-4 text-sm mb-6">
@@ -119,7 +171,10 @@ const ProductDetails: React.FC = () => {
                         </div>
                         <span className="text-gray-500">({product.reviews || 0} Reviews)</span>
                         <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                        <span className={`font-medium ${product.stock && product.stock > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        <span 
+                          className="font-medium"
+                          style={{ color: product.stock && product.stock > 0 ? '#22c55e' : '#ef4444' }}
+                        >
                           {product.stock && product.stock > 0 ? 'In Stock' : 'Out of Stock'}
                         </span>
                     </div>
@@ -128,9 +183,9 @@ const ProductDetails: React.FC = () => {
                         <div className="flex items-end gap-3 mb-4">
                         {product.salePrice && product.salePrice > 0 ? (
                           <>
-                            <span className="text-3xl font-bold text-red-500">Rs. {product.salePrice.toLocaleString()}</span>
+                            <span className="text-3xl font-bold" style={{ color: '#ef4444' }}>Rs. {product.salePrice.toLocaleString()}</span>
                             <span className="text-lg text-gray-400 line-through mb-1">Rs. {product.price.toLocaleString()}</span>
-                            <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded mb-1">
+                            <span className="text-xs font-bold px-2 py-1 rounded mb-1" style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}>
                               {Math.round(((product.price - product.salePrice) / product.price) * 100)}% OFF
                             </span>
                           </>
@@ -162,7 +217,8 @@ const ProductDetails: React.FC = () => {
                             </div>
                             <button 
                               onClick={handleAddToCart}
-                              className="flex-1 min-w-[200px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-8 rounded-lg shadow-lg flex justify-center items-center gap-2 transition-all hover:-translate-y-0.5"
+                              className="flex-1 min-w-[200px] font-bold py-3 px-8 rounded-lg shadow-lg flex justify-center items-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-xl"
+                              style={{ backgroundColor: '#10b981', color: '#ffffff' }}
                             >
                                 <span className="material-icons">shopping_bag</span> Add to Cart
                             </button>

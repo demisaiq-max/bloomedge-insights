@@ -133,7 +133,7 @@ const Cart: React.FC = () => {
                           {totalShipping > 0 ? (
                             <span className="font-medium text-gray-900 dark:text-white">Rs. {totalShipping.toLocaleString()}</span>
                           ) : (
-                            <span className="font-medium text-green-500">Free</span>
+                            <span className="font-medium" style={{ color: '#22c55e' }}>Free</span>
                           )}
                         </div>
                         {totalTax > 0 && (
@@ -145,11 +145,15 @@ const Cart: React.FC = () => {
                         <div className="border-t border-gray-200 dark:border-gray-700 my-4"></div>
                         <div className="flex justify-between items-center">
                             <span className="text-lg font-bold text-gray-900 dark:text-white">Total</span>
-                            <span className="text-2xl font-bold text-primary">Rs. {total.toLocaleString()}</span>
+                            <span className="text-2xl font-bold" style={{ color: '#10b981' }}>Rs. {total.toLocaleString()}</span>
                         </div>
                     </div>
                     {cart.length > 0 ? (
-                      <Link to="/checkout" className="w-full mt-8 bg-primary hover:bg-green-600 text-white font-bold py-3 px-4 rounded shadow-lg flex justify-center items-center gap-2 transition-transform hover:-translate-y-0.5">
+                      <Link 
+                        to="/checkout" 
+                        className="w-full mt-8 font-bold py-3 px-4 rounded shadow-lg flex justify-center items-center gap-2 transition-transform hover:-translate-y-0.5"
+                        style={{ backgroundColor: '#10b981', color: '#ffffff' }}
+                      >
                           <span>Proceed to Checkout</span> <span className="material-icons text-sm">arrow_forward</span>
                       </Link>
                     ) : (

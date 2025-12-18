@@ -10,6 +10,8 @@ const Header: React.FC = () => {
   const { cartItemCount } = useStore();
   const [user, setUser] = useState<User | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [cartBounce, setCartBounce] = useState(false);
+  const prevCartCount = useRef(cartItemCount);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -33,6 +35,15 @@ const Header: React.FC = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Animate cart badge when count increases
+  useEffect(() => {
+    if (cartItemCount > prevCartCount.current) {
+      setCartBounce(true);
+      setTimeout(() => setCartBounce(false), 400);
+    }
+    prevCartCount.current = cartItemCount;
+  }, [cartItemCount]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -86,7 +97,10 @@ const Header: React.FC = () => {
                       onClick={() => setShowDropdown(!showDropdown)}
                       className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-primary transition-colors"
                     >
-                      <div className="h-8 w-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-bold">
+                      <div 
+                        className="h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold"
+                        style={{ backgroundColor: '#10b981', color: '#ffffff' }}
+                      >
                         {user.email?.charAt(0).toUpperCase()}
                       </div>
                     </button>
@@ -115,7 +129,10 @@ const Header: React.FC = () => {
               <Link to="/cart" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors relative">
                 <span className="material-icons-outlined">shopping_cart</span>
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                  <span 
+                    className={`absolute -top-2 -right-2 text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold ${cartBounce ? 'cart-bounce' : ''}`}
+                    style={{ backgroundColor: '#10b981', color: '#ffffff' }}
+                  >
                     {cartItemCount > 99 ? '99+' : cartItemCount}
                   </span>
                 )}
