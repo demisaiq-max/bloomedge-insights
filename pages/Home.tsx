@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import { useStore } from '../context/StoreContext';
 import { Product } from '../types';
 import brandLogos from '@/src/assets/brand-logos.png';
+import { supabase } from '../src/integrations/supabase/client';
 
 // Reusable Product Carousel Component
 interface ProductCarouselProps {
@@ -115,10 +116,44 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({ title, products, clas
 
 const Home: React.FC = () => {
   const { products } = useStore();
+  const [email, setEmail] = useState('');
+  const [subscribing, setSubscribing] = useState(false);
+  const [subscribeMessage, setSubscribeMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   
   // Create derived lists safely
   const bestsellers = products.length > 0 ? [...products, ...products].slice(0, 10) : []; 
   const newArrivals = products.length > 0 ? [...products].reverse().slice(0, 10) : [];
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedEmail = email.trim();
+    
+    // Validate email
+    if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setSubscribeMessage({ type: 'error', text: 'Please enter a valid email address.' });
+      return;
+    }
+
+    setSubscribing(true);
+    setSubscribeMessage(null);
+
+    const { error } = await supabase
+      .from('newsletter_subscribers')
+      .insert({ email: trimmedEmail });
+
+    setSubscribing(false);
+
+    if (error) {
+      if (error.code === '23505') { // Unique violation
+        setSubscribeMessage({ type: 'error', text: 'This email is already subscribed.' });
+      } else {
+        setSubscribeMessage({ type: 'error', text: 'Subscription failed. Please try again.' });
+      }
+    } else {
+      setSubscribeMessage({ type: 'success', text: 'Thank you for subscribing!' });
+      setEmail('');
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900">
@@ -178,20 +213,29 @@ const Home: React.FC = () => {
               <p className="mb-8 max-w-xl mx-auto opacity-90">
                 Subscribe to our newsletter for exclusive deals, new arrivals, and healthy living tips.
               </p>
-              <form className="flex flex-col sm:flex-row justify-center max-w-md mx-auto gap-2">
+              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row justify-center max-w-md mx-auto gap-2">
                 <input
                   type="email"
                   placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 rounded-lg border-none focus:ring-2 focus:outline-none"
                   style={{ backgroundColor: '#ffffff', color: '#1f2937' }}
+                  disabled={subscribing}
                 />
                 <button
-                  type="button"
-                  className="bg-gray-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors"
+                  type="submit"
+                  disabled={subscribing}
+                  className="bg-gray-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50"
                 >
-                  Subscribe
+                  {subscribing ? 'Subscribing...' : 'Subscribe'}
                 </button>
               </form>
+              {subscribeMessage && (
+                <p className={`mt-4 text-sm font-medium ${subscribeMessage.type === 'success' ? 'text-white' : 'text-yellow-200'}`}>
+                  {subscribeMessage.text}
+                </p>
+              )}
             </div>
           </div>
         </div>
