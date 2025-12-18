@@ -165,8 +165,8 @@ const Shop: React.FC = () => {
                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary" 
              />
              <div className="flex justify-between text-xs text-gray-500 mt-2">
-                 <span>Rs 0</span>
-                 <span className="font-semibold text-primary">Rs {priceRange.toLocaleString()}{priceRange >= 10000 ? '+' : ''}</span>
+                 <span>Rs. 0</span>
+                 <span className="font-semibold text-primary">Rs. {priceRange.toLocaleString()}{priceRange >= 10000 ? '+' : ''}</span>
              </div>
           </div>
         </aside>
@@ -231,11 +231,11 @@ const Shop: React.FC = () => {
                         <div className="mt-auto pt-2 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <span className={`font-bold ${isOnSale ? 'text-red-500' : 'text-primary'}`}>
-                                  Rs{displayPrice?.toLocaleString()}
+                                  Rs. {displayPrice?.toLocaleString()}
                                 </span>
                                 {isOnSale && (
                                   <span className="text-xs text-gray-400 line-through">
-                                    Rs{product.price.toLocaleString()}
+                                    Rs. {product.price.toLocaleString()}
                                   </span>
                                 )}
                             </div>
