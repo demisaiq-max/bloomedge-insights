@@ -5,7 +5,7 @@ import { supabase } from '@/src/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 
 const Checkout: React.FC = () => {
-  const { cart, products } = useStore();
+  const { cart, cartTotal } = useStore();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState('');
@@ -36,19 +36,7 @@ const Checkout: React.FC = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Get cart items with product details
-  const cartItems = cart.map(item => {
-    const product = products.find(p => p.id === item.productId);
-    return product ? { ...product, quantity: item.quantity } : null;
-  }).filter(Boolean);
-
-  const subtotal = cartItems.reduce((sum, item) => {
-    if (!item) return sum;
-    const price = item.salePrice ?? item.price;
-    return sum + (price * item.quantity);
-  }, 0);
-
-  const total = subtotal + shippingCost;
+  const total = cartTotal + shippingCost;
 
   if (cart.length === 0) {
     return (
@@ -201,15 +189,17 @@ const Checkout: React.FC = () => {
                  <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 sticky top-24 border border-gray-200 dark:border-gray-700">
                      <h2 className="text-xl font-bold mb-6">Order Summary</h2>
                      <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                         {cartItems.map((item, i) => item && (
-                             <li key={i} className="flex py-6">
+                         {cart.map((item) => {
+                           const displayPrice = item.salePrice ?? item.price;
+                           return (
+                             <li key={item.id} className="flex py-6">
                                  <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-gray-200 bg-white p-1">
-                                     <img src={item.image} className="h-full w-full object-contain" alt={item.name} />
+                                     <img src={item.images?.[0] || item.image || ''} className="h-full w-full object-contain" alt={item.name} />
                                  </div>
                                  <div className="ml-4 flex flex-1 flex-col">
                                      <div className="flex justify-between text-base font-medium">
                                          <h3>{item.name}</h3>
-                                         <p className="ml-4">Rs. {((item.salePrice ?? item.price) * item.quantity).toLocaleString()}</p>
+                                         <p className="ml-4">Rs. {(displayPrice * item.quantity).toLocaleString()}</p>
                                      </div>
                                      <p className="mt-1 text-sm text-gray-500">{item.category}</p>
                                      <div className="flex flex-1 items-end justify-between text-sm">
@@ -220,12 +210,13 @@ const Checkout: React.FC = () => {
                                      </div>
                                  </div>
                              </li>
-                         ))}
+                           );
+                         })}
                      </ul>
                      <div className="border-t border-gray-200 mt-6 pt-6 space-y-2">
                         <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                             <p>Subtotal</p>
-                            <p>Rs. {subtotal.toLocaleString()}</p>
+                            <p>Rs. {cartTotal.toLocaleString()}</p>
                         </div>
                         <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                             <p>Shipping</p>

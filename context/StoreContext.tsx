@@ -55,8 +55,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     saveCartToStorage(cart);
   }, [cart]);
 
-  // Calculate cart totals
-  const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  // Calculate cart totals (use sale price if available)
+  const cartTotal = cart.reduce((sum, item) => sum + ((item.salePrice ?? item.price) * item.quantity), 0);
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   // Calculate stats from real data
