@@ -3,13 +3,14 @@ import { useStore } from '../../context/StoreContext';
 import { Product } from '../../types';
 
 const AdminProducts: React.FC = () => {
-  const { products, categories, addProduct, updateProduct, deleteProduct } = useStore();
+  const { products, categories, addProduct, updateProduct, deleteProduct, loading } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [saving, setSaving] = useState(false);
   
   // Form State
   const [formData, setFormData] = useState<Partial<Product>>({
@@ -17,7 +18,7 @@ const AdminProducts: React.FC = () => {
     category: 'Vegetables',
     price: 0,
     image: '',
-    lowStock: false,
+    stock: 0,
     description: ''
   });
 
@@ -40,28 +41,56 @@ const AdminProducts: React.FC = () => {
         category: categories[0]?.name || 'Vegetables',
         price: 0,
         image: 'https://placehold.co/400x400/png?text=Product+Image',
-        lowStock: false,
+        stock: 10,
         description: ''
       });
     }
     setIsModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingProduct) {
-      updateProduct(editingProduct.id, formData);
-    } else {
-      addProduct(formData as Product); // ID is handled in context
+    setSaving(true);
+    try {
+      if (editingProduct) {
+        await updateProduct(editingProduct.id, formData);
+      } else {
+        await addProduct(formData as Omit<Product, 'id'>);
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error saving product:', error);
+      alert('Failed to save product. Please make sure you are logged in.');
+    } finally {
+      setSaving(false);
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      deleteProduct(id);
+      try {
+        await deleteProduct(id);
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        alert('Failed to delete product. Please make sure you are logged in.');
+      }
     }
   };
+
+  const getStockStatus = (stock: number | null | undefined) => {
+    if (stock === null || stock === undefined) return 'unknown';
+    if (stock === 0) return 'out';
+    if (stock <= 5) return 'low';
+    return 'in';
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 font-sans">
@@ -86,7 +115,7 @@ const AdminProducts: React.FC = () => {
             </span>
             <input 
               type="text" 
-              placeholder="Search products by name, SKU..." 
+              placeholder="Search products by name..." 
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -113,45 +142,50 @@ const AdminProducts: React.FC = () => {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Product</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Category</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Price</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Stock Status</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Stock</th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredProducts.map((product) => (
-                <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-12 w-12 bg-gray-100 rounded-md border border-gray-200 p-1">
-                        <img className="h-full w-full object-contain" src={product.image} alt={product.name} />
+              {filteredProducts.map((product) => {
+                const stockStatus = getStockStatus(product.stock);
+                return (
+                  <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-12 w-12 bg-gray-100 rounded-md border border-gray-200 p-1">
+                          <img className="h-full w-full object-contain" src={product.image || 'https://placehold.co/100x100/png?text=No+Image'} alt={product.name} />
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">{product.name}</div>
+                          <div className="text-xs text-gray-500">ID: {product.id.slice(0, 8)}...</div>
+                        </div>
                       </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">{product.name}</div>
-                        <div className="text-xs text-gray-500">ID: #{1000 + product.id}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                      {product.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                    Rs {product.price.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {product.lowStock ? (
-                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Low Stock</span>
-                    ) : (
-                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">In Stock</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onClick={() => handleOpenModal(product)} className="text-indigo-600 hover:text-indigo-900 mr-4">Edit</button>
-                    <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-900">Delete</button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                        {product.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                      Rs {product.price.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {stockStatus === 'out' ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300">Out of Stock</span>
+                      ) : stockStatus === 'low' ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Low Stock ({product.stock})</span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">In Stock ({product.stock ?? 0})</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button onClick={() => handleOpenModal(product)} className="text-indigo-600 hover:text-indigo-900 mr-4">Edit</button>
+                      <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-900">Delete</button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
           {filteredProducts.length === 0 && (
@@ -179,45 +213,45 @@ const AdminProducts: React.FC = () => {
                       <div className="mt-4 space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Product Name</label>
-                          <input type="text" required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" 
+                          <input type="text" required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
                             value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
-                                <select className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                <select className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                     value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
                                     {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Price</label>
-                                <input type="number" step="0.01" required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Price (Rs)</label>
+                                <input type="number" step="0.01" required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                     value={formData.price} onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})} />
                             </div>
                         </div>
                         <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Stock Quantity</label>
+                          <input type="number" min="0" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            value={formData.stock ?? 0} onChange={e => setFormData({...formData, stock: parseInt(e.target.value)})} />
+                        </div>
+                        <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
-                          <textarea className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" rows={3}
+                          <textarea className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" rows={3}
                             value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})}></textarea>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Image URL</label>
-                          <input type="text" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                            value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} />
-                        </div>
-                        <div className="flex items-center mt-2">
-                             <input type="checkbox" id="lowStock" className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                                checked={formData.lowStock} onChange={e => setFormData({...formData, lowStock: e.target.checked})} />
-                             <label htmlFor="lowStock" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">Mark as Low Stock</label>
+                          <input type="text" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            value={formData.image || ''} onChange={e => setFormData({...formData, image: e.target.value})} />
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                  <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
-                    {editingProduct ? 'Update Product' : 'Create Product'}
+                  <button type="submit" disabled={saving} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50">
+                    {saving ? 'Saving...' : (editingProduct ? 'Update Product' : 'Create Product')}
                   </button>
                   <button type="button" onClick={() => setIsModalOpen(false)} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                     Cancel

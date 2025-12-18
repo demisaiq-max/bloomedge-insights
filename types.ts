@@ -1,17 +1,16 @@
 export interface Product {
-  id: number;
+  id: string;
   name: string;
   category: string;
   price: number;
   originalPrice?: number;
-  image: string;
+  image: string | null;
   rating?: number;
   reviews?: number;
   isNew?: boolean;
   isOrganic?: boolean;
-  lowStock?: boolean;
-  outOfStock?: boolean;
-  description?: string;
+  stock?: number | null;
+  description?: string | null;
 }
 
 export interface CartItem extends Product {
@@ -22,7 +21,7 @@ export interface Category {
   id: string;
   name: string;
   slug: string;
-  description?: string;
+  image?: string | null;
 }
 
 export interface Order {

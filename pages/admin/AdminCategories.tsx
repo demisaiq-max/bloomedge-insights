@@ -1,24 +1,66 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
-import { Category } from '../../types';
 
 const AdminCategories: React.FC = () => {
-  const { categories, products, addCategory, deleteCategory } = useStore();
+  const { categories, products, addCategory, deleteCategory, loading } = useStore();
   
   // Create Category Logic
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategorySlug, setNewCategorySlug] = useState('');
+  const [saving, setSaving] = useState(false);
   
-  const handleAddCategory = () => {
+  const handleAddCategory = async () => {
     if (!newCategoryName || !newCategorySlug) return;
-    addCategory({ name: newCategoryName, slug: newCategorySlug });
-    setNewCategoryName('');
-    setNewCategorySlug('');
+    setSaving(true);
+    try {
+      await addCategory({ name: newCategoryName, slug: newCategorySlug });
+      setNewCategoryName('');
+      setNewCategorySlug('');
+    } catch (error) {
+      console.error('Error adding category:', error);
+      alert('Failed to add category. Please make sure you are logged in.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this category?')) {
+      try {
+        await deleteCategory(id);
+      } catch (error) {
+        console.error('Error deleting category:', error);
+        alert('Failed to delete category. Please make sure you are logged in.');
+      }
+    }
   };
 
   const getProductCount = (categoryName: string) => {
     return products.filter(p => p.category === categoryName).length;
   };
+
+  // Find most popular category
+  const getMostPopularCategory = () => {
+    if (categories.length === 0) return 'N/A';
+    let maxCount = 0;
+    let mostPopular = categories[0]?.name || 'N/A';
+    categories.forEach(cat => {
+      const count = getProductCount(cat.name);
+      if (count > maxCount) {
+        maxCount = count;
+        mostPopular = cat.name;
+      }
+    });
+    return mostPopular;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -36,7 +78,7 @@ const AdminCategories: React.FC = () => {
                <div className="p-2 bg-blue-50 text-blue-600 rounded-full"><span className="material-icons">folder</span></div>
            </div>
            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex justify-between items-center">
-               <div><p className="text-sm text-gray-500">Most Popular</p><p className="text-2xl font-bold text-gray-900 dark:text-white">Vegetables</p></div>
+               <div><p className="text-sm text-gray-500">Most Popular</p><p className="text-2xl font-bold text-gray-900 dark:text-white">{getMostPopularCategory()}</p></div>
                <div className="p-2 bg-green-50 text-green-600 rounded-full"><span className="material-icons">trending_up</span></div>
            </div>
            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex justify-between items-center">
@@ -51,21 +93,23 @@ const AdminCategories: React.FC = () => {
                <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleAddCategory(); }}>
                    <div>
                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Category Name</label>
-                       <input type="text" className="mt-1 block w-full rounded border-gray-300 p-2" placeholder="e.g. Organic Fruits" 
+                       <input type="text" className="mt-1 block w-full rounded border-gray-300 p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g. Organic Fruits" 
                          value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} required />
                    </div>
                    <div>
                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Slug</label>
-                       <input type="text" className="mt-1 block w-full rounded border-gray-300 p-2" placeholder="e.g. organic-fruits"
+                       <input type="text" className="mt-1 block w-full rounded border-gray-300 p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g. organic-fruits"
                          value={newCategorySlug} onChange={e => setNewCategorySlug(e.target.value)} required />
                    </div>
-                   <button type="submit" className="w-full bg-primary text-white py-2 rounded shadow hover:bg-green-600">Save Category</button>
+                   <button type="submit" disabled={saving} className="w-full bg-primary text-white py-2 rounded shadow hover:bg-green-600 disabled:opacity-50">
+                     {saving ? 'Saving...' : 'Save Category'}
+                   </button>
                </form>
            </div>
            
            <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex justify-between">
-                   <input type="text" placeholder="Search categories..." className="rounded border-gray-300 text-sm p-1 px-2" />
+                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">All Categories</span>
                </div>
                <div className="overflow-x-auto">
                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -73,7 +117,7 @@ const AdminCategories: React.FC = () => {
                          <tr>
                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Slug</th>
-                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Count</th>
+                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Products</th>
                              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                          </tr>
                      </thead>
@@ -84,10 +128,17 @@ const AdminCategories: React.FC = () => {
                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{category.slug}</td>
                                <td className="px-6 py-4 whitespace-nowrap text-center"><span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">{getProductCount(category.name)}</span></td>
                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                 <button onClick={() => deleteCategory(category.id)} className="text-red-600 hover:text-red-900">Delete</button>
+                                 <button onClick={() => handleDeleteCategory(category.id)} className="text-red-600 hover:text-red-900">Delete</button>
                                </td>
                            </tr>
                          ))}
+                         {categories.length === 0 && (
+                           <tr>
+                             <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                               No categories found. Add your first category above.
+                             </td>
+                           </tr>
+                         )}
                      </tbody>
                  </table>
                </div>
