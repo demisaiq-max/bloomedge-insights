@@ -132,6 +132,7 @@ export type Database = {
           description: string | null
           id: string
           image: string | null
+          images: string[] | null
           is_new: boolean | null
           is_organic: boolean | null
           name: string
@@ -145,6 +146,7 @@ export type Database = {
           description?: string | null
           id?: string
           image?: string | null
+          images?: string[] | null
           is_new?: boolean | null
           is_organic?: boolean | null
           name: string
@@ -158,6 +160,7 @@ export type Database = {
           description?: string | null
           id?: string
           image?: string | null
+          images?: string[] | null
           is_new?: boolean | null
           is_organic?: boolean | null
           name?: string

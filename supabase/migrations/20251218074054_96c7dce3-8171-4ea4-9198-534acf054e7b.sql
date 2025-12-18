@@ -1,0 +1,20 @@
+-- Create storage bucket for product images
+INSERT INTO storage.buckets (id, name, public) VALUES ('product-images', 'product-images', true);
+
+-- Allow public read access to product images
+CREATE POLICY "Anyone can view product images"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'product-images');
+
+-- Allow authenticated users to upload product images
+CREATE POLICY "Authenticated users can upload product images"
+ON storage.objects FOR INSERT
+WITH CHECK (bucket_id = 'product-images');
+
+-- Allow authenticated users to delete product images
+CREATE POLICY "Authenticated users can delete product images"
+ON storage.objects FOR DELETE
+USING (bucket_id = 'product-images');
+
+-- Add images array column to products table
+ALTER TABLE public.products ADD COLUMN images TEXT[] DEFAULT '{}';

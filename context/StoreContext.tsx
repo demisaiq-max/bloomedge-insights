@@ -119,6 +119,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       category: p.category,
       price: Number(p.price),
       image: p.image,
+      images: (p as unknown as { images?: string[] }).images || [],
       isNew: p.is_new ?? false,
       isOrganic: p.is_organic ?? false,
       stock: p.stock,
@@ -228,6 +229,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         category: product.category,
         price: product.price,
         image: product.image,
+        images: product.images || [],
         description: product.description,
         is_new: product.isNew ?? false,
         is_organic: product.isOrganic ?? false,
@@ -247,6 +249,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (updatedProduct.category !== undefined) updateData.category = updatedProduct.category;
     if (updatedProduct.price !== undefined) updateData.price = updatedProduct.price;
     if (updatedProduct.image !== undefined) updateData.image = updatedProduct.image;
+    if (updatedProduct.images !== undefined) updateData.images = updatedProduct.images;
     if (updatedProduct.description !== undefined) updateData.description = updatedProduct.description;
     if (updatedProduct.isNew !== undefined) updateData.is_new = updatedProduct.isNew;
     if (updatedProduct.isOrganic !== undefined) updateData.is_organic = updatedProduct.isOrganic;
