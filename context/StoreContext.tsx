@@ -1,17 +1,24 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product, Category, Order } from '../types';
+import { Product, Category, Order, CartItem } from '../types';
 import { supabase } from '@/src/integrations/supabase/client';
 
 interface StoreContextType {
   products: Product[];
   categories: Category[];
   orders: Order[];
+  cart: CartItem[];
   loading: boolean;
   addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
   updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   addCategory: (category: Omit<Category, 'id'>) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
+  addToCart: (product: Product, quantity?: number) => void;
+  removeFromCart: (productId: string) => void;
+  updateCartQuantity: (productId: string, quantity: number) => void;
+  clearCart: () => void;
+  cartTotal: number;
+  cartItemCount: number;
   stats: {
     totalSales: number;
     totalOrders: number;
@@ -21,17 +28,77 @@ interface StoreContextType {
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
+// Load cart from localStorage
+const loadCartFromStorage = (): CartItem[] => {
+  try {
+    const saved = localStorage.getItem('cart');
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
+};
+
+// Save cart to localStorage
+const saveCartToStorage = (cart: CartItem[]) => {
+  localStorage.setItem('cart', JSON.stringify(cart));
+};
+
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(loadCartFromStorage);
   const [loading, setLoading] = useState(true);
+
+  // Save cart whenever it changes
+  useEffect(() => {
+    saveCartToStorage(cart);
+  }, [cart]);
+
+  // Calculate cart totals
+  const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   // Calculate stats from real data
   const stats = {
     totalSales: orders.reduce((sum, order) => sum + Number(order.total), 0),
     totalOrders: orders.length,
-    visitors: 0, // Would need analytics for real visitor count
+    visitors: 0,
+  };
+
+  // Cart functions
+  const addToCart = (product: Product, quantity: number = 1) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.id === product.id);
+      if (existing) {
+        return prev.map(item =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      }
+      return [...prev, { ...product, quantity }];
+    });
+  };
+
+  const removeFromCart = (productId: string) => {
+    setCart(prev => prev.filter(item => item.id !== productId));
+  };
+
+  const updateCartQuantity = (productId: string, quantity: number) => {
+    if (quantity <= 0) {
+      removeFromCart(productId);
+      return;
+    }
+    setCart(prev =>
+      prev.map(item =>
+        item.id === productId ? { ...item, quantity } : item
+      )
+    );
+  };
+
+  const clearCart = () => {
+    setCart([]);
   };
 
   // Fetch products from database
@@ -239,13 +306,20 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <StoreContext.Provider value={{ 
       products, 
       categories, 
-      orders, 
+      orders,
+      cart,
       loading,
       addProduct, 
       updateProduct, 
       deleteProduct,
       addCategory,
       deleteCategory,
+      addToCart,
+      removeFromCart,
+      updateCartQuantity,
+      clearCart,
+      cartTotal,
+      cartItemCount,
       stats
     }}>
       {children}

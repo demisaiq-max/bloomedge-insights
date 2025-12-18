@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useStore } from '../context/StoreContext';
 
 const Header: React.FC = () => {
   const location = useLocation();
+  const { cartItemCount } = useStore();
   const isDark = false; // We can implement theme context later
 
   return (
@@ -55,7 +57,11 @@ const Header: React.FC = () => {
               </Link>
               <Link to="/cart" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors relative">
                 <span className="material-icons-outlined">shopping_cart</span>
-                <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">3</span>
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                    {cartItemCount > 99 ? '99+' : cartItemCount}
+                  </span>
+                )}
               </Link>
               <button className="lg:hidden text-gray-600 dark:text-gray-300">
                 <span className="material-icons-outlined">menu</span>

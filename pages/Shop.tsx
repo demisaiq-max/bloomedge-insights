@@ -5,7 +5,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 const Shop: React.FC = () => {
-  const { products, categories: storeCategories } = useStore();
+  const { products, categories: storeCategories, addToCart } = useStore();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [priceRange, setPriceRange] = useState<number>(10000);
   const [sortBy, setSortBy] = useState<string>('default');
@@ -119,8 +119,14 @@ const Shop: React.FC = () => {
                         <img src={product.image || ''} alt={product.name} className="h-full w-auto object-contain group-hover:scale-105 transition-transform duration-300" />
                         {(product.stock ?? 0) <= 10 && (product.stock ?? 0) > 0 && <span className="absolute top-2 left-2 bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded">LOW STOCK</span>}
                         {product.isOrganic && <span className="absolute top-2 left-2 bg-green-100 text-green-800 text-[10px] font-bold px-2 py-0.5 rounded">ORGANIC</span>}
-                        <button className="absolute top-2 right-2 p-1.5 rounded-full bg-white shadow-sm text-gray-400 hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span className="material-icons text-sm">add</span>
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            addToCart(product);
+                          }}
+                          className="absolute top-2 right-2 p-1.5 rounded-full bg-white shadow-sm text-gray-400 hover:text-primary hover:bg-green-50 opacity-0 group-hover:opacity-100 transition-all"
+                        >
+                            <span className="material-icons text-sm">add_shopping_cart</span>
                         </button>
                     </Link>
                     <div className="p-4 flex flex-col flex-grow">
