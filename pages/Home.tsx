@@ -92,7 +92,7 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({ title, products, clas
                       </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">{product.category}</p>
                       <div className="flex justify-between items-center">
-                        <span className="font-bold text-gray-900 dark:text-white text-lg">Rs{product.price.toLocaleString()}</span>
+                        <span className="font-bold text-gray-900 dark:text-white text-lg">Rs. {product.price.toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
