@@ -23,14 +23,8 @@ const Header: React.FC = () => {
       <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <Link to="/" className="flex items-center space-x-3">
-              <div className="h-10 w-10 relative overflow-hidden flex items-center justify-center">
-                 <span className="material-icons text-primary text-4xl">eco</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-display font-bold text-2xl tracking-tight text-gray-900 dark:text-white leading-none">BloomEdge</span>
-                <span className="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">Enterprises</span>
-              </div>
+            <Link to="/" className="flex items-center">
+              <img src="/logo.png" alt="BloomEdge Enterprises" className="h-12 w-auto" />
             </Link>
             <nav className="hidden lg:flex items-center space-x-8 font-medium text-sm text-gray-700 dark:text-gray-200">
               <Link to="/shop?category=Dairy" className="hover:text-primary transition-colors">DAIRY</Link>
