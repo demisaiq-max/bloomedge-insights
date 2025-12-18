@@ -304,15 +304,16 @@ const AdminProducts: React.FC = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div 
-              className="fixed inset-0 transition-opacity" 
+              className="fixed inset-0 transition-opacity z-0" 
               style={{ backgroundColor: 'rgba(107, 114, 128, 0.75)' }}
               aria-hidden="true" 
               onClick={() => setIsModalOpen(false)}
             ></div>
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             <div 
-              className="inline-block align-bottom rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full"
+              className="relative z-10 inline-block align-bottom rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full"
               style={{ backgroundColor: '#ffffff' }}
+              onClick={(e) => e.stopPropagation()}
             >
               <form onSubmit={handleSave}>
                 <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4" style={{ backgroundColor: '#ffffff' }}>
