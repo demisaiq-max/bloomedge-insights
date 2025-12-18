@@ -185,7 +185,9 @@ const AdminProducts: React.FC = () => {
         </div>
         <button 
           onClick={() => handleOpenModal()}
-          className="bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-green-600 flex items-center gap-2 transition-all">
+          className="px-4 py-2 rounded-lg shadow flex items-center gap-2 transition-all"
+          style={{ backgroundColor: '#10b981', color: '#ffffff' }}
+        >
           <span className="material-icons text-sm">add</span> Add New Product
         </button>
       </div>
@@ -240,7 +242,10 @@ const AdminProducts: React.FC = () => {
                         <div className="flex-shrink-0 h-12 w-12 bg-gray-100 rounded-md border border-gray-200 p-1 relative">
                           <img className="h-full w-full object-contain" src={product.images?.[0] || product.image || 'https://placehold.co/100x100/png?text=No+Image'} alt={product.name} />
                           {imageCount > 1 && (
-                            <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            <span 
+                              className="absolute -top-1 -right-1 text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                              style={{ backgroundColor: '#10b981', color: '#ffffff' }}
+                            >
                               {imageCount}
                             </span>
                           )}
@@ -298,11 +303,19 @@ const AdminProducts: React.FC = () => {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={() => setIsModalOpen(false)}></div>
+            <div 
+              className="fixed inset-0 transition-opacity" 
+              style={{ backgroundColor: 'rgba(107, 114, 128, 0.75)' }}
+              aria-hidden="true" 
+              onClick={() => setIsModalOpen(false)}
+            ></div>
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+            <div 
+              className="inline-block align-bottom rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full"
+              style={{ backgroundColor: '#ffffff' }}
+            >
               <form onSubmit={handleSave}>
-                <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4" style={{ backgroundColor: '#ffffff' }}>
                   <div className="sm:flex sm:items-start">
                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                       <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
@@ -450,7 +463,10 @@ const AdminProducts: React.FC = () => {
                                     <span className="material-icons text-xs">close</span>
                                   </button>
                                   {index === 0 && (
-                                    <span className="absolute bottom-1 left-1 bg-primary text-white text-xs px-1 rounded">
+                                    <span 
+                                      className="absolute bottom-1 left-1 text-xs px-1 rounded"
+                                      style={{ backgroundColor: '#10b981', color: '#ffffff' }}
+                                    >
                                       Main
                                     </span>
                                   )}
@@ -463,11 +479,21 @@ const AdminProducts: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                  <button type="submit" disabled={saving || uploading} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50">
+                <div className="px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse" style={{ backgroundColor: '#f9fafb' }}>
+                  <button 
+                    type="submit" 
+                    disabled={saving || uploading} 
+                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium focus:outline-none sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                    style={{ backgroundColor: '#10b981', color: '#ffffff' }}
+                  >
                     {saving ? 'Saving...' : (editingProduct ? 'Update Product' : 'Create Product')}
                   </button>
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                  <button 
+                    type="button" 
+                    onClick={() => setIsModalOpen(false)} 
+                    className="mt-3 w-full inline-flex justify-center rounded-md border shadow-sm px-4 py-2 text-base font-medium focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                    style={{ backgroundColor: '#ffffff', color: '#374151', borderColor: '#d1d5db' }}
+                  >
                     Cancel
                   </button>
                 </div>
