@@ -105,8 +105,17 @@ const ProductDetails: React.FC = () => {
 
                     <div className="border-y border-gray-100 dark:border-gray-700 py-6 mb-6">
                         <div className="flex items-end gap-3 mb-4">
-                            <span className="text-3xl font-bold text-gray-900 dark:text-white">Rs{product.price.toLocaleString()}</span>
-                            {product.originalPrice && <span className="text-lg text-gray-400 line-through mb-1">Rs{product.originalPrice.toLocaleString()}</span>}
+                            {product.salePrice && product.salePrice > 0 ? (
+                              <>
+                                <span className="text-3xl font-bold text-red-500">Rs{product.salePrice.toLocaleString()}</span>
+                                <span className="text-lg text-gray-400 line-through mb-1">Rs{product.price.toLocaleString()}</span>
+                                <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded mb-1">
+                                  {Math.round(((product.price - product.salePrice) / product.price) * 100)}% OFF
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-3xl font-bold text-gray-900 dark:text-white">Rs{product.price.toLocaleString()}</span>
+                            )}
                         </div>
                         <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm">
                             {product.description || 'Premium quality product sourced directly from sustainable farms. Perfect for your daily needs.'}

@@ -137,6 +137,7 @@ export type Database = {
           is_organic: boolean | null
           name: string
           price: number
+          sale_price: number | null
           stock: number | null
           updated_at: string
         }
@@ -151,6 +152,7 @@ export type Database = {
           is_organic?: boolean | null
           name: string
           price: number
+          sale_price?: number | null
           stock?: number | null
           updated_at?: string
         }
@@ -165,6 +167,7 @@ export type Database = {
           is_organic?: boolean | null
           name?: string
           price?: number
+          sale_price?: number | null
           stock?: number | null
           updated_at?: string
         }
