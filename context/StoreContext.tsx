@@ -24,20 +24,14 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [orders] = useState<Order[]>([
-    { id: '#ORD-7782', customer: 'Alice Freeman', date: 'Oct 24, 2023', total: 125.50, status: 'Pending', items: 4 },
-    { id: '#ORD-7781', customer: 'Martin Smith', date: 'Oct 24, 2023', total: 45.00, status: 'Shipped', items: 2 },
-    { id: '#ORD-7780', customer: 'Jessica Doe', date: 'Oct 23, 2023', total: 230.20, status: 'Delivered', items: 8 },
-    { id: '#ORD-7779', customer: 'Ryan Bolt', date: 'Oct 23, 2023', total: 15.75, status: 'Cancelled', items: 1 },
-    { id: '#ORD-7778', customer: 'Sarah Connor', date: 'Oct 22, 2023', total: 89.99, status: 'Delivered', items: 3 },
-  ]);
-
+  // Calculate stats from real data
   const stats = {
-    totalSales: 15430.50,
-    totalOrders: 1245,
-    visitors: 8503,
+    totalSales: orders.reduce((sum, order) => sum + Number(order.total), 0),
+    totalOrders: orders.length,
+    visitors: 0, // Would need analytics for real visitor count
   };
 
   // Fetch products from database
@@ -82,11 +76,36 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCategories(data || []);
   };
 
+  // Fetch orders from database with item counts
+  const fetchOrders = async () => {
+    const { data: ordersData, error: ordersError } = await supabase
+      .from('orders')
+      .select('*, order_items(count)')
+      .order('created_at', { ascending: false });
+    
+    if (ordersError) {
+      console.error('Error fetching orders:', ordersError);
+      return;
+    }
+    
+    const mappedOrders: Order[] = (ordersData || []).map(o => ({
+      id: o.id,
+      user_id: o.user_id,
+      total: Number(o.total),
+      status: o.status,
+      shipping_address: o.shipping_address,
+      created_at: o.created_at,
+      items: o.order_items?.[0]?.count || 0,
+    }));
+    
+    setOrders(mappedOrders);
+  };
+
   // Initial data fetch
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await Promise.all([fetchProducts(), fetchCategories()]);
+      await Promise.all([fetchProducts(), fetchCategories(), fetchOrders()]);
       setLoading(false);
     };
     loadData();
@@ -116,9 +135,21 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       )
       .subscribe();
 
+    const ordersChannel = supabase
+      .channel('orders-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        () => {
+          fetchOrders();
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(productsChannel);
       supabase.removeChannel(categoriesChannel);
+      supabase.removeChannel(ordersChannel);
     };
   }, []);
 

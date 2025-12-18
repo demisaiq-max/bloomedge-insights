@@ -26,9 +26,11 @@ export interface Category {
 
 export interface Order {
   id: string;
-  customer: string;
-  date: string;
+  user_id: string | null;
   total: number;
-  status: 'Pending' | 'Shipped' | 'Delivered' | 'Cancelled';
-  items: number;
+  status: string;
+  shipping_address: string | null;
+  created_at: string;
+  items?: number;
+  customer?: string;
 }
