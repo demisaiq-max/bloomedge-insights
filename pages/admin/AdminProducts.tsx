@@ -157,7 +157,7 @@ const AdminProducts: React.FC = () => {
   const getStockStatus = (stock: number | null | undefined) => {
     if (stock === null || stock === undefined) return 'unknown';
     if (stock === 0) return 'out';
-    if (stock <= 5) return 'low';
+    if (stock < 10) return 'low';
     return 'in';
   };
 
