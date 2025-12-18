@@ -52,11 +52,32 @@ const ProductDetails: React.FC = () => {
                     {/* Main Image */}
                     <div className="aspect-square bg-gray-50 dark:bg-gray-700 rounded-xl flex items-center justify-center p-8 relative">
                         {product.isOrganic && <span className="absolute top-4 left-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">Organic</span>}
+                        
+                        {/* Left Arrow */}
+                        {allImages.length > 1 && (
+                          <button
+                            onClick={() => setSelectedImageIndex(prev => prev === 0 ? allImages.length - 1 : prev - 1)}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10"
+                          >
+                            <span className="material-icons text-gray-600 dark:text-gray-300">chevron_left</span>
+                          </button>
+                        )}
+                        
                         <img 
                           src={allImages[selectedImageIndex]} 
                           alt={product.name} 
                           className="w-full h-full object-contain" 
                         />
+                        
+                        {/* Right Arrow */}
+                        {allImages.length > 1 && (
+                          <button
+                            onClick={() => setSelectedImageIndex(prev => prev === allImages.length - 1 ? 0 : prev + 1)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10"
+                          >
+                            <span className="material-icons text-gray-600 dark:text-gray-300">chevron_right</span>
+                          </button>
+                        )}
                     </div>
                     
                     {/* Thumbnail Gallery */}
@@ -141,7 +162,7 @@ const ProductDetails: React.FC = () => {
                             </div>
                             <button 
                               onClick={handleAddToCart}
-                              className="flex-1 bg-primary hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg flex justify-center items-center gap-2 transition-transform transform hover:-translate-y-0.5"
+                              className="flex-1 min-w-[200px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-8 rounded-lg shadow-lg flex justify-center items-center gap-2 transition-all hover:-translate-y-0.5"
                             >
                                 <span className="material-icons">shopping_bag</span> Add to Cart
                             </button>
