@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { Product } from '../../types';
+import { supabase } from '@/src/integrations/supabase/client';
 
 const AdminProducts: React.FC = () => {
   const { products, categories, addProduct, updateProduct, deleteProduct, loading } = useStore();
@@ -11,6 +12,8 @@ const AdminProducts: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Form State
   const [formData, setFormData] = useState<Partial<Product>>({
@@ -18,6 +21,7 @@ const AdminProducts: React.FC = () => {
     category: 'Vegetables',
     price: 0,
     image: '',
+    images: [],
     stock: 0,
     description: ''
   });
@@ -33,14 +37,18 @@ const AdminProducts: React.FC = () => {
   const handleOpenModal = (product?: Product) => {
     if (product) {
       setEditingProduct(product);
-      setFormData(product);
+      setFormData({
+        ...product,
+        images: product.images || []
+      });
     } else {
       setEditingProduct(null);
       setFormData({
         name: '',
         category: categories[0]?.name || 'Vegetables',
         price: 0,
-        image: 'https://placehold.co/400x400/png?text=Product+Image',
+        image: '',
+        images: [],
         stock: 10,
         description: ''
       });
@@ -48,14 +56,75 @@ const AdminProducts: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    const uploadedUrls: string[] = [];
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `products/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(filePath, file);
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          continue;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(filePath);
+
+        uploadedUrls.push(publicUrl);
+      }
+
+      const newImages = [...(formData.images || []), ...uploadedUrls];
+      setFormData({
+        ...formData,
+        images: newImages,
+        image: newImages[0] || formData.image // Set first image as main image
+      });
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      alert('Failed to upload images. Please try again.');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const removeImage = (indexToRemove: number) => {
+    const newImages = (formData.images || []).filter((_, index) => index !== indexToRemove);
+    setFormData({
+      ...formData,
+      images: newImages,
+      image: newImages[0] || '' // Update main image
+    });
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
+      const productData = {
+        ...formData,
+        image: formData.images?.[0] || formData.image || ''
+      };
+      
       if (editingProduct) {
-        await updateProduct(editingProduct.id, formData);
+        await updateProduct(editingProduct.id, productData);
       } else {
-        await addProduct(formData as Omit<Product, 'id'>);
+        await addProduct(productData as Omit<Product, 'id'>);
       }
       setIsModalOpen(false);
     } catch (error) {
@@ -149,12 +218,18 @@ const AdminProducts: React.FC = () => {
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredProducts.map((product) => {
                 const stockStatus = getStockStatus(product.stock);
+                const imageCount = product.images?.length || (product.image ? 1 : 0);
                 return (
                   <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-12 w-12 bg-gray-100 rounded-md border border-gray-200 p-1">
-                          <img className="h-full w-full object-contain" src={product.image || 'https://placehold.co/100x100/png?text=No+Image'} alt={product.name} />
+                        <div className="flex-shrink-0 h-12 w-12 bg-gray-100 rounded-md border border-gray-200 p-1 relative">
+                          <img className="h-full w-full object-contain" src={product.images?.[0] || product.image || 'https://placehold.co/100x100/png?text=No+Image'} alt={product.name} />
+                          {imageCount > 1 && (
+                            <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                              {imageCount}
+                            </span>
+                          )}
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900 dark:text-white">{product.name}</div>
@@ -240,17 +315,69 @@ const AdminProducts: React.FC = () => {
                           <textarea className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" rows={3}
                             value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})}></textarea>
                         </div>
+                        
+                        {/* Image Picker */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Image URL</label>
-                          <input type="text" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            value={formData.image || ''} onChange={e => setFormData({...formData, image: e.target.value})} />
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product Images</label>
+                          
+                          {/* Upload Button */}
+                          <div className="flex items-center gap-3 mb-3">
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={handleImageUpload}
+                              className="hidden"
+                              id="image-upload"
+                            />
+                            <label
+                              htmlFor="image-upload"
+                              className={`flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                              <span className="material-icons text-gray-500">cloud_upload</span>
+                              <span className="text-sm text-gray-600 dark:text-gray-300">
+                                {uploading ? 'Uploading...' : 'Choose Images'}
+                              </span>
+                            </label>
+                            <span className="text-xs text-gray-500">
+                              {formData.images?.length || 0} image(s) selected
+                            </span>
+                          </div>
+                          
+                          {/* Image Preview Grid */}
+                          {formData.images && formData.images.length > 0 && (
+                            <div className="grid grid-cols-4 gap-2 mt-2">
+                              {formData.images.map((img, index) => (
+                                <div key={index} className="relative group aspect-square">
+                                  <img
+                                    src={img}
+                                    alt={`Product ${index + 1}`}
+                                    className="w-full h-full object-cover rounded-lg border border-gray-200 dark:border-gray-600"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => removeImage(index)}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <span className="material-icons text-xs">close</span>
+                                  </button>
+                                  {index === 0 && (
+                                    <span className="absolute bottom-1 left-1 bg-primary text-white text-xs px-1 rounded">
+                                      Main
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                  <button type="submit" disabled={saving} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50">
+                  <button type="submit" disabled={saving || uploading} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50">
                     {saving ? 'Saving...' : (editingProduct ? 'Update Product' : 'Create Product')}
                   </button>
                   <button type="button" onClick={() => setIsModalOpen(false)} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">

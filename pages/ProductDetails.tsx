@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -6,11 +6,24 @@ import { useStore } from '../context/StoreContext';
 
 const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { products } = useStore();
+  const { products, addToCart } = useStore();
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [quantity, setQuantity] = useState(1);
   
-  const product = products.find(p => p.id === Number(id)) || products[0];
+  const product = products.find(p => p.id === id) || products[0];
 
   if (!product) return <div>Product not found</div>;
+
+  // Get all images (use images array or fallback to single image)
+  const allImages = product.images && product.images.length > 0 
+    ? product.images 
+    : product.image 
+      ? [product.image] 
+      : ['https://placehold.co/400x400/png?text=No+Image'];
+
+  const handleAddToCart = () => {
+    addToCart(product, quantity);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
@@ -36,10 +49,38 @@ const ProductDetails: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 {/* Images */}
                 <div className="space-y-4">
+                    {/* Main Image */}
                     <div className="aspect-square bg-gray-50 dark:bg-gray-700 rounded-xl flex items-center justify-center p-8 relative">
                         {product.isOrganic && <span className="absolute top-4 left-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">Organic</span>}
-                        <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
+                        <img 
+                          src={allImages[selectedImageIndex]} 
+                          alt={product.name} 
+                          className="w-full h-full object-contain" 
+                        />
                     </div>
+                    
+                    {/* Thumbnail Gallery */}
+                    {allImages.length > 1 && (
+                      <div className="flex gap-3 overflow-x-auto pb-2">
+                        {allImages.map((img, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setSelectedImageIndex(index)}
+                            className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                              selectedImageIndex === index 
+                                ? 'border-primary ring-2 ring-primary/20' 
+                                : 'border-gray-200 dark:border-gray-600 hover:border-primary/50'
+                            }`}
+                          >
+                            <img 
+                              src={img} 
+                              alt={`${product.name} ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
                 </div>
 
                 {/* Info */}
@@ -57,7 +98,9 @@ const ProductDetails: React.FC = () => {
                         </div>
                         <span className="text-gray-500">({product.reviews || 0} Reviews)</span>
                         <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                        <span className="text-green-500 font-medium">In Stock</span>
+                        <span className={`font-medium ${product.stock && product.stock > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          {product.stock && product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                        </span>
                     </div>
 
                     <div className="border-y border-gray-100 dark:border-gray-700 py-6 mb-6">
@@ -73,13 +116,26 @@ const ProductDetails: React.FC = () => {
                     <div className="space-y-6">
                         <div className="flex flex-col sm:flex-row gap-4">
                             <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg w-max bg-white dark:bg-gray-700">
-                                <button className="px-4 py-2 text-gray-600 hover:text-primary"><span className="material-icons text-sm">remove</span></button>
-                                <span className="w-12 text-center font-semibold text-gray-800 dark:text-white">1</span>
-                                <button className="px-4 py-2 text-gray-600 hover:text-primary"><span className="material-icons text-sm">add</span></button>
+                                <button 
+                                  onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                                  className="px-4 py-2 text-gray-600 hover:text-primary"
+                                >
+                                  <span className="material-icons text-sm">remove</span>
+                                </button>
+                                <span className="w-12 text-center font-semibold text-gray-800 dark:text-white">{quantity}</span>
+                                <button 
+                                  onClick={() => setQuantity(q => q + 1)}
+                                  className="px-4 py-2 text-gray-600 hover:text-primary"
+                                >
+                                  <span className="material-icons text-sm">add</span>
+                                </button>
                             </div>
-                            <Link to="/cart" className="flex-1 bg-primary hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg flex justify-center items-center gap-2 transition-transform transform hover:-translate-y-0.5">
+                            <button 
+                              onClick={handleAddToCart}
+                              className="flex-1 bg-primary hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg flex justify-center items-center gap-2 transition-transform transform hover:-translate-y-0.5"
+                            >
                                 <span className="material-icons">shopping_bag</span> Add to Cart
-                            </Link>
+                            </button>
                         </div>
                     </div>
                 </div>
