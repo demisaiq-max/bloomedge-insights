@@ -1,16 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, Category, Order } from '../types';
-import { products as initialProducts } from '../data';
+import { supabase } from '@/src/integrations/supabase/client';
 
 interface StoreContextType {
   products: Product[];
   categories: Category[];
   orders: Order[];
-  addProduct: (product: Omit<Product, 'id'>) => void;
-  updateProduct: (id: number, product: Partial<Product>) => void;
-  deleteProduct: (id: number) => void;
-  addCategory: (category: Omit<Category, 'id'>) => void;
-  deleteCategory: (id: string) => void;
+  loading: boolean;
+  addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
+  updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
+  addCategory: (category: Omit<Category, 'id'>) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
   stats: {
     totalSales: number;
     totalOrders: number;
@@ -21,25 +22,9 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  
-  // Initialize categories based on data + some defaults
-  const [categories, setCategories] = useState<Category[]>([
-    { id: '1', name: 'Dairy', slug: 'dairy', description: 'Fresh milk, cheese, and yogurt' },
-    { id: '2', name: 'Pantry', slug: 'pantry', description: 'Staples like rice, pasta, and grains' },
-    { id: '3', name: 'Vegetables', slug: 'vegetables', description: 'Farm fresh vegetables' },
-    { id: '4', name: 'Organic', slug: 'organic', description: 'Certified organic products' },
-    { id: '5', name: 'Yogurt', slug: 'yogurt', description: 'Probiotic rich yogurts' },
-    { id: '6', name: 'Sale', slug: 'sale', description: 'Discounted items' },
-    { id: '7', name: 'Beverages', slug: 'beverages', description: 'Juices, water, and sodas' },
-    { id: '8', name: 'Bakery', slug: 'bakery', description: 'Fresh bread and pastries' },
-    { id: '9', name: 'Snacks', slug: 'snacks', description: 'Chips, nuts, and crackers' },
-    { id: '10', name: 'Meat', slug: 'meat', description: 'Fresh cuts of meat' },
-    { id: '11', name: 'Seafood', slug: 'seafood', description: 'Sustainably sourced seafood' },
-    { id: '12', name: 'Frozen', slug: 'frozen', description: 'Frozen meals and veggies' },
-    { id: '13', name: 'Household', slug: 'household', description: 'Cleaning and home supplies' },
-    { id: '14', name: 'Personal Care', slug: 'personal-care', description: 'Soaps, shampoos, and lotions' },
-  ]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [orders] = useState<Order[]>([
     { id: '#ORD-7782', customer: 'Alice Freeman', date: 'Oct 24, 2023', total: 125.50, status: 'Pending', items: 4 },
@@ -55,26 +40,168 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     visitors: 8503,
   };
 
-  const addProduct = (product: Omit<Product, 'id'>) => {
-    const newId = Math.max(...products.map(p => p.id), 0) + 1;
-    setProducts([...products, { ...product, id: newId }]);
+  // Fetch products from database
+  const fetchProducts = async () => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching products:', error);
+      return;
+    }
+    
+    const mappedProducts: Product[] = (data || []).map(p => ({
+      id: p.id,
+      name: p.name,
+      category: p.category,
+      price: Number(p.price),
+      image: p.image,
+      isNew: p.is_new ?? false,
+      isOrganic: p.is_organic ?? false,
+      stock: p.stock,
+      description: p.description,
+    }));
+    
+    setProducts(mappedProducts);
   };
 
-  const updateProduct = (id: number, updatedProduct: Partial<Product>) => {
-    setProducts(products.map(p => p.id === id ? { ...p, ...updatedProduct } : p));
+  // Fetch categories from database
+  const fetchCategories = async () => {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('name', { ascending: true });
+    
+    if (error) {
+      console.error('Error fetching categories:', error);
+      return;
+    }
+    
+    setCategories(data || []);
   };
 
-  const deleteProduct = (id: number) => {
-    setProducts(products.filter(p => p.id !== id));
+  // Initial data fetch
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchProducts(), fetchCategories()]);
+      setLoading(false);
+    };
+    loadData();
+  }, []);
+
+  // Real-time subscriptions
+  useEffect(() => {
+    const productsChannel = supabase
+      .channel('products-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        () => {
+          fetchProducts();
+        }
+      )
+      .subscribe();
+
+    const categoriesChannel = supabase
+      .channel('categories-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'categories' },
+        () => {
+          fetchCategories();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(productsChannel);
+      supabase.removeChannel(categoriesChannel);
+    };
+  }, []);
+
+  const addProduct = async (product: Omit<Product, 'id'>) => {
+    const { error } = await supabase
+      .from('products')
+      .insert({
+        name: product.name,
+        category: product.category,
+        price: product.price,
+        image: product.image,
+        description: product.description,
+        is_new: product.isNew ?? false,
+        is_organic: product.isOrganic ?? false,
+        stock: product.stock ?? 0,
+      });
+    
+    if (error) {
+      console.error('Error adding product:', error);
+      throw error;
+    }
   };
 
-  const addCategory = (category: Omit<Category, 'id'>) => {
-    const newId = Math.random().toString(36).substr(2, 9);
-    setCategories([...categories, { ...category, id: newId }]);
+  const updateProduct = async (id: string, updatedProduct: Partial<Product>) => {
+    const updateData: Record<string, unknown> = {};
+    
+    if (updatedProduct.name !== undefined) updateData.name = updatedProduct.name;
+    if (updatedProduct.category !== undefined) updateData.category = updatedProduct.category;
+    if (updatedProduct.price !== undefined) updateData.price = updatedProduct.price;
+    if (updatedProduct.image !== undefined) updateData.image = updatedProduct.image;
+    if (updatedProduct.description !== undefined) updateData.description = updatedProduct.description;
+    if (updatedProduct.isNew !== undefined) updateData.is_new = updatedProduct.isNew;
+    if (updatedProduct.isOrganic !== undefined) updateData.is_organic = updatedProduct.isOrganic;
+    if (updatedProduct.stock !== undefined) updateData.stock = updatedProduct.stock;
+
+    const { error } = await supabase
+      .from('products')
+      .update(updateData)
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error updating product:', error);
+      throw error;
+    }
   };
 
-  const deleteCategory = (id: string) => {
-    setCategories(categories.filter(c => c.id !== id));
+  const deleteProduct = async (id: string) => {
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error deleting product:', error);
+      throw error;
+    }
+  };
+
+  const addCategory = async (category: Omit<Category, 'id'>) => {
+    const { error } = await supabase
+      .from('categories')
+      .insert({
+        name: category.name,
+        slug: category.slug,
+        image: category.image,
+      });
+    
+    if (error) {
+      console.error('Error adding category:', error);
+      throw error;
+    }
+  };
+
+  const deleteCategory = async (id: string) => {
+    const { error } = await supabase
+      .from('categories')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error deleting category:', error);
+      throw error;
+    }
   };
 
   return (
@@ -82,6 +209,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       products, 
       categories, 
       orders, 
+      loading,
       addProduct, 
       updateProduct, 
       deleteProduct,
