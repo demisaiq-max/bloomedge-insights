@@ -8,23 +8,59 @@ const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingRole, setCheckingRole] = useState(true);
   const isActive = (path: string) => location.pathname.includes(path);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // Check admin role after auth state change
+      if (session?.user) {
+        setTimeout(() => {
+          checkAdminRole(session.user.id);
+        }, 0);
+      } else {
+        setIsAdmin(false);
+        setCheckingRole(false);
+      }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      if (session?.user) {
+        checkAdminRole(session.user.id);
+      } else {
+        setCheckingRole(false);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  if (loading) {
+  const checkAdminRole = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .maybeSingle();
+      
+      setIsAdmin(!!data);
+    } catch (error) {
+      console.error('Error checking admin role:', error);
+      setIsAdmin(false);
+    } finally {
+      setCheckingRole(false);
+    }
+  };
+
+  if (loading || checkingRole) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f9fafb' }}>
         <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#10b981' }}></div>
@@ -39,7 +75,7 @@ const AdminLayout: React.FC = () => {
           <span className="material-icons text-6xl mb-4" style={{ color: '#f59e0b' }}>lock</span>
           <h2 className="text-2xl font-bold mb-2" style={{ color: '#111827' }}>Authentication Required</h2>
           <p className="mb-6" style={{ color: '#6b7280' }}>
-            You need to be logged in to access the admin panel. Please log in to manage products and categories.
+            You need to be logged in to access the admin panel. Please log in with an admin account.
           </p>
           <Link 
             to="/login" 
@@ -53,6 +89,30 @@ const AdminLayout: React.FC = () => {
               ← Back to Store
             </Link>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f9fafb' }}>
+        <div className="text-center p-8 rounded-lg shadow-lg max-w-md" style={{ backgroundColor: '#ffffff' }}>
+          <span className="material-icons text-6xl mb-4" style={{ color: '#ef4444' }}>block</span>
+          <h2 className="text-2xl font-bold mb-2" style={{ color: '#111827' }}>Access Denied</h2>
+          <p className="mb-6" style={{ color: '#6b7280' }}>
+            You don't have admin privileges. Only authorized administrators can access the product management section.
+          </p>
+          <p className="text-sm mb-6" style={{ color: '#9ca3af' }}>
+            Logged in as: {user.email}
+          </p>
+          <Link 
+            to="/" 
+            className="inline-block px-6 py-3 rounded-lg font-bold transition-all"
+            style={{ backgroundColor: '#10b981', color: '#ffffff' }}
+          >
+            Back to Store
+          </Link>
         </div>
       </div>
     );
@@ -93,7 +153,7 @@ const AdminLayout: React.FC = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user.email}</p>
-              <p className="text-xs text-gray-500">Admin</p>
+              <p className="text-xs" style={{ color: '#10b981' }}>Admin</p>
             </div>
           </div>
         </div>

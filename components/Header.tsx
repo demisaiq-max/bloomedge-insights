@@ -9,6 +9,7 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
   const { cartItemCount } = useStore();
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [cartBounce, setCartBounce] = useState(false);
   const prevCartCount = useRef(cartItemCount);
@@ -17,14 +18,41 @@ const Header: React.FC = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        setTimeout(() => {
+          checkAdminRole(session.user.id);
+        }, 0);
+      } else {
+        setIsAdmin(false);
+      }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        checkAdminRole(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const checkAdminRole = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .maybeSingle();
+      
+      setIsAdmin(!!data);
+    } catch (error) {
+      console.error('Error checking admin role:', error);
+      setIsAdmin(false);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -48,6 +76,7 @@ const Header: React.FC = () => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setShowDropdown(false);
+    setIsAdmin(false);
     navigate('/');
   };
 
@@ -61,7 +90,9 @@ const Header: React.FC = () => {
           </div>
           <div className="flex space-x-4">
             <span className="flex items-center"><span className="material-icons-outlined text-[14px] mr-1">local_shipping</span> Free Shipping over $150</span>
-            <Link to="/admin" className="hover:text-primary transition-colors">Admin Portal</Link>
+            {isAdmin && (
+              <Link to="/admin" className="hover:text-primary transition-colors">Admin Portal</Link>
+            )}
           </div>
         </div>
       </div>
@@ -78,11 +109,15 @@ const Header: React.FC = () => {
               <Link to="/shop?filter=organic" className="hover:text-primary transition-colors">ORGANIC</Link>
               <Link to="/shop?filter=sale" className="hover:text-primary transition-colors text-red-500 font-bold">SALE</Link>
               
-              <div className="h-5 w-px bg-gray-300 dark:bg-gray-600 mx-2"></div>
-              <Link to="/admin/products" className="flex items-center gap-2 text-gray-900 dark:text-white font-bold hover:text-primary transition-colors">
-                  <span className="material-icons-outlined text-lg">inventory_2</span>
-                  PRODUCT MANAGEMENT
-              </Link>
+              {isAdmin && (
+                <>
+                  <div className="h-5 w-px bg-gray-300 dark:bg-gray-600 mx-2"></div>
+                  <Link to="/admin/products" className="flex items-center gap-2 text-gray-900 dark:text-white font-bold hover:text-primary transition-colors">
+                      <span className="material-icons-outlined text-lg">inventory_2</span>
+                      PRODUCT MANAGEMENT
+                  </Link>
+                </>
+              )}
             </nav>
             <div className="flex items-center space-x-4">
               <button className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
@@ -108,7 +143,20 @@ const Header: React.FC = () => {
                       <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
                         <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
                           <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user.email}</p>
+                          {isAdmin && (
+                            <p className="text-xs" style={{ color: '#10b981' }}>Admin</p>
+                          )}
                         </div>
+                        {isAdmin && (
+                          <Link 
+                            to="/admin"
+                            onClick={() => setShowDropdown(false)}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
+                          >
+                            <span className="material-icons-outlined text-lg">admin_panel_settings</span>
+                            Admin Portal
+                          </Link>
+                        )}
                         <button 
                           onClick={handleLogout}
                           className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
