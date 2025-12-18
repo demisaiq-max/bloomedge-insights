@@ -41,7 +41,25 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({ title, products, clas
     }
   };
 
-  if (products.length === 0) return null;
+  if (products.length === 0) {
+    return (
+      <section className={`py-16 ${className}`}>
+        <div className="container mx-auto px-4">
+          <div className="relative flex items-center justify-center mb-12">
+            <div aria-hidden="true" className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-2 text-sm uppercase tracking-widest font-semibold">
+                {title}
+              </span>
+            </div>
+          </div>
+          <p className="text-center text-gray-500 dark:text-gray-400">No products available in this section yet.</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section 
@@ -120,9 +138,13 @@ const Home: React.FC = () => {
   const [subscribing, setSubscribing] = useState(false);
   const [subscribeMessage, setSubscribeMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   
-  // Filter products based on flags
-  const bestsellers = products.filter(p => p.isBestseller);
-  const newArrivals = products.filter(p => p.isNewArrival);
+  // Filter products based on flags - show default products if none flagged
+  const flaggedBestsellers = products.filter(p => p.isBestseller);
+  const flaggedNewArrivals = products.filter(p => p.isNewArrival);
+  
+  // If no products are flagged, show first 8 products as fallback
+  const bestsellers = flaggedBestsellers.length > 0 ? flaggedBestsellers : products.slice(0, 8);
+  const newArrivals = flaggedNewArrivals.length > 0 ? flaggedNewArrivals : products.slice(0, 8);
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
