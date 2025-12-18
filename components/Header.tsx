@@ -85,14 +85,11 @@ const Header: React.FC = () => {
       <div className="bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 text-xs py-2">
         <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-gray-500 dark:text-gray-400">
           <div className="flex space-x-4 mb-2 md:mb-0">
-            <span className="flex items-center"><span className="material-icons-outlined text-[14px] mr-1">email</span> contact@bloomedge.com</span>
-            <span className="flex items-center"><span className="material-icons-outlined text-[14px] mr-1">phone</span> +1-800-BLOOM-ED</span>
+            <span className="flex items-center"><span className="material-icons-outlined text-[14px] mr-1">email</span> bloomedge85@gmail.com</span>
+            <span className="flex items-center"><span className="material-icons-outlined text-[14px] mr-1">phone</span> +92 345 4617510</span>
           </div>
           <div className="flex space-x-4">
-            <span className="flex items-center"><span className="material-icons-outlined text-[14px] mr-1">local_shipping</span> Free Shipping over $150</span>
-            {isAdmin && (
-              <Link to="/admin" className="hover:text-primary transition-colors">Admin Portal</Link>
-            )}
+            <span className="flex items-center"><span className="material-icons-outlined text-[14px] mr-1">local_shipping</span> Free Shipping over PKR 5000</span>
           </div>
         </div>
       </div>
