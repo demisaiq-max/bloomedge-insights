@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, Category, Order, CartItem } from '../types';
-import { supabase } from '@/src/integrations/supabase/client';
+import { supabase } from '../src/integrations/supabase/client';
 
 interface StoreContextType {
   products: Product[];
