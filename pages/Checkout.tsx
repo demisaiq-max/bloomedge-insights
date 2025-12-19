@@ -5,7 +5,7 @@ import { supabase } from '@/src/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 
 const Checkout: React.FC = () => {
-  const { cart, cartTotal } = useStore();
+  const { cart, cartTotal, clearCart } = useStore();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState('');
@@ -16,6 +16,8 @@ const Checkout: React.FC = () => {
   const [state, setState] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [phone, setPhone] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
 
   // Calculate shipping and tax from cart items (same logic as Cart)
   const totalShipping = cart.reduce((sum, item) => sum + ((item.shippingCost ?? 0) * item.quantity), 0);
@@ -44,6 +46,92 @@ const Checkout: React.FC = () => {
   }, []);
 
   const total = cartTotal + totalShipping + totalTax;
+
+  const handlePlaceOrder = async () => {
+    // Validate required fields
+    if (!firstName || !lastName || !address || !city || !phone) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    if (!user) {
+      alert('Please log in to place an order');
+      navigate('/login');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Create order
+      const fullAddress = `${address}, ${city}, ${state} ${postalCode}`;
+      const customerName = `${firstName} ${lastName}`;
+
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          total: total,
+          status: 'pending',
+          shipping_address: fullAddress,
+          customer_name: customerName,
+          customer_email: email,
+          customer_phone: phone,
+          customer_city: city,
+        })
+        .select()
+        .single();
+
+      if (orderError) {
+        throw orderError;
+      }
+
+      // Create order items
+      const orderItems = cart.map(item => ({
+        order_id: orderData.id,
+        product_id: item.id,
+        product_name: item.name,
+        quantity: item.quantity,
+        price: item.salePrice ?? item.price,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) {
+        throw itemsError;
+      }
+
+      // Clear cart and show success
+      clearCart();
+      setOrderSuccess(true);
+
+    } catch (error) {
+      console.error('Error placing order:', error);
+      alert('Failed to place order. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (orderSuccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md">
+          <span className="material-icons text-6xl text-green-500 mb-4">check_circle</span>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Order Placed Successfully!</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">Thank you for your order. We will process it shortly.</p>
+          <Link 
+            to="/shop" 
+            className="inline-block bg-primary hover:bg-green-600 text-white px-6 py-3 rounded font-semibold"
+          >
+            Continue Shopping
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (cart.length === 0) {
     return (
@@ -189,7 +277,20 @@ const Checkout: React.FC = () => {
                 
                 <div className="flex justify-end gap-4 mt-8">
                     <Link to="/cart" className="text-blue-500 hover:text-blue-700 font-medium text-sm flex items-center">Return to Cart</Link>
-                    <button className="bg-primary hover:bg-green-600 text-white px-6 py-3 rounded font-semibold shadow-md">Continue to Payment</button>
+                    <button 
+                      onClick={handlePlaceOrder}
+                      disabled={isSubmitting}
+                      className="bg-primary hover:bg-green-600 text-white px-6 py-3 rounded font-semibold shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                          Processing...
+                        </>
+                      ) : (
+                        'Place Order'
+                      )}
+                    </button>
                 </div>
              </section>
 

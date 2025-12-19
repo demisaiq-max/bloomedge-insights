@@ -12,7 +12,7 @@ import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminCategories from './pages/admin/AdminCategories';
 import AdminProducts from './pages/admin/AdminProducts';
-
+import AdminOrders from './pages/admin/AdminOrders';
 const App: React.FC = () => {
   return (
     <StoreProvider>
@@ -32,6 +32,7 @@ const App: React.FC = () => {
              <Route path="dashboard" element={<AdminDashboard />} />
              <Route path="products" element={<AdminProducts />} />
              <Route path="categories" element={<AdminCategories />} />
+             <Route path="orders" element={<AdminOrders />} />
           </Route>
         </Routes>
       </HashRouter>

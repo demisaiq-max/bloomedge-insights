@@ -129,6 +129,9 @@ const AdminLayout: React.FC = () => {
            <Link to="/admin/dashboard" className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${isActive('/admin/dashboard') ? 'bg-primary/10 text-primary' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
                <span className="material-icons text-lg">dashboard</span> Dashboard
            </Link>
+           <Link to="/admin/orders" className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${isActive('/admin/orders') ? 'bg-primary/10 text-primary' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
+               <span className="material-icons text-lg">receipt_long</span> Orders
+           </Link>
            <Link to="/admin/products" className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${isActive('/admin/products') ? 'bg-primary/10 text-primary' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
                <span className="material-icons text-lg">inventory_2</span> Product Management
            </Link>
