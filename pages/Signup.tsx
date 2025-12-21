@@ -8,8 +8,10 @@ const Signup: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -76,6 +78,26 @@ const Signup: React.FC = () => {
     setLoading(false);
   };
 
+  const handleResendVerification = async () => {
+    setResending(true);
+    setResendMessage(null);
+
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email.trim(),
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+      }
+    });
+
+    if (error) {
+      setResendMessage(`Error: ${error.message}`);
+    } else {
+      setResendMessage('Verification email sent! Please check your inbox.');
+    }
+    setResending(false);
+  };
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-white dark:bg-gray-900">
       {/* Image Side */}
@@ -111,9 +133,21 @@ const Signup: React.FC = () => {
                 We've sent a verification link to <strong>{email}</strong>. 
                 Please check your email and click the link to verify your account.
               </p>
-              <p className="text-xs text-green-600">
+              <p className="text-xs text-green-600 mb-4">
                 Didn't receive the email? Check your spam folder.
               </p>
+              {resendMessage && (
+                <p className={`text-xs mb-3 ${resendMessage.startsWith('Error') ? 'text-red-600' : 'text-green-600'}`}>
+                  {resendMessage}
+                </p>
+              )}
+              <button
+                onClick={handleResendVerification}
+                disabled={resending}
+                className="inline-block px-6 py-2 bg-primary text-white text-sm font-bold uppercase tracking-wider rounded hover:bg-green-700 transition-colors disabled:opacity-50"
+              >
+                {resending ? 'Sending...' : 'Resend Verification Email'}
+              </button>
             </div>
           ) : (
             <form onSubmit={handleSignup} className="mt-8 space-y-6">
