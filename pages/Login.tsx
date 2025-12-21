@@ -101,7 +101,13 @@ const Login: React.FC = () => {
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded focus:ring-primary focus:border-primary sm:text-sm" 
                   />
                 </div>
-              </div>
+            </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Link to="/forgot-password" className="text-sm text-primary hover:text-green-500 font-medium">
+                Forgot password?
+              </Link>
             </div>
 
             <button 
