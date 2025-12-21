@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/src/integrations/supabase/client';
 
 const ResetPassword: React.FC = () => {
@@ -11,53 +11,71 @@ const ResetPassword: React.FC = () => {
   const [isValidSession, setIsValidSession] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     const handlePasswordRecovery = async () => {
-      // Parse tokens from URL - with HashRouter, tokens come after the hash
-      // The URL looks like: /#/reset-password?access_token=xxx&refresh_token=xxx&type=recovery
-      const searchParams = new URLSearchParams(location.search);
-      const accessToken = searchParams.get('access_token');
-      const refreshToken = searchParams.get('refresh_token');
-      const type = searchParams.get('type');
+      // With HashRouter, the auth provider appends tokens into the URL fragment.
+      // Example after redirect:
+      //   https://site.com/#/reset-password#access_token=...&refresh_token=...&type=recovery
+      const rawHash = window.location.hash || '';
+      const hash = rawHash.startsWith('#') ? rawHash.slice(1) : rawHash;
+
+      let paramString = '';
+      if (hash.includes('?')) {
+        // Some providers append tokens as query params inside the hash route
+        paramString = hash.split('?')[1] ?? '';
+      } else if (hash.includes('#')) {
+        // Tokens appended after a second '#'
+        paramString = hash.split('#').pop() ?? '';
+      } else if (hash.startsWith('access_token=')) {
+        // Non-router case: hash is directly the token string
+        paramString = hash;
+      }
+
+      const params = new URLSearchParams(paramString);
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+      const type = params.get('type');
 
       if (accessToken && refreshToken && type === 'recovery') {
-        // Set the session using the tokens from the URL
         const { error } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken,
         });
 
+        setCheckingSession(false);
+
         if (!error) {
           setIsValidSession(true);
-        } else {
-          console.error('Error setting session:', error);
+          // Remove tokens from the URL for security/cleanliness
+          navigate('/reset-password', { replace: true });
+          return;
         }
-        setCheckingSession(false);
-        return;
       }
 
-      // Check for existing session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setIsValidSession(true);
-      }
+      // Fallback: check for existing session
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) setIsValidSession(true);
       setCheckingSession(false);
     };
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // Listen for auth state changes (provider may auto-establish the session)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY' && session) {
         setIsValidSession(true);
         setCheckingSession(false);
+        navigate('/reset-password', { replace: true });
       }
     });
 
     handlePasswordRecovery();
 
     return () => subscription.unsubscribe();
-  }, [location.search]);
+  }, [navigate]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
