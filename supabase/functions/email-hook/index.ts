@@ -1,7 +1,9 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@4.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+// @ts-nocheck
+/* eslint-disable */
+/**
+ * Supabase Edge Function - Custom Email Hook
+ * This file runs in Deno runtime on Supabase, not in the local Node.js environment.
+ */
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -31,6 +33,7 @@ const getPasswordResetEmailHtml = (
   userName: string,
   resetLink: string
 ): string => {
+  const currentYear = new Date().getFullYear();
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -44,28 +47,21 @@ const getPasswordResetEmailHtml = (
     <tr>
       <td align="center" style="padding: 40px 0;">
         <table role="presentation" style="width: 600px; max-width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);">
-          <!-- Header -->
           <tr>
             <td style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding: 40px 40px 30px 40px; text-align: center;">
               <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600; letter-spacing: -0.5px;">BloomEdge Enterprises</h1>
               <p style="margin: 8px 0 0 0; color: rgba(255, 255, 255, 0.9); font-size: 14px;">Quality products delivered to your doorstep</p>
             </td>
           </tr>
-          
-          <!-- Content -->
           <tr>
             <td style="padding: 40px;">
               <h2 style="margin: 0 0 20px 0; color: #1f2937; font-size: 24px; font-weight: 600;">Password Reset Request</h2>
-              
               <p style="margin: 0 0 20px 0; color: #4b5563; font-size: 16px; line-height: 1.6;">
                 Hello${userName ? ` ${userName}` : ''},
               </p>
-              
               <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px; line-height: 1.6;">
                 We received a request to reset your password for your BloomEdge Enterprises account. Click the button below to create a new password:
               </p>
-              
-              <!-- Button -->
               <table role="presentation" style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td align="center" style="padding: 10px 0 30px 0;">
@@ -75,29 +71,24 @@ const getPasswordResetEmailHtml = (
                   </td>
                 </tr>
               </table>
-              
               <p style="margin: 0 0 16px 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
                 This link will expire in 1 hour for security reasons. If you didn't request a password reset, you can safely ignore this email.
               </p>
-              
               <p style="margin: 0 0 24px 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
                 If the button doesn't work, copy and paste this link into your browser:
               </p>
-              
               <p style="margin: 0; padding: 16px; background-color: #f3f4f6; border-radius: 8px; word-break: break-all; color: #22c55e; font-size: 13px; font-family: monospace;">
                 ${resetLink}
               </p>
             </td>
           </tr>
-          
-          <!-- Footer -->
           <tr>
             <td style="background-color: #f9fafb; padding: 30px 40px; border-top: 1px solid #e5e7eb;">
               <p style="margin: 0 0 12px 0; color: #6b7280; font-size: 14px; text-align: center;">
                 Need help? Contact our support team
               </p>
               <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">
-                © ${new Date().getFullYear()} BloomEdge Enterprises. All rights reserved.
+                © ${currentYear} BloomEdge Enterprises. All rights reserved.
               </p>
             </td>
           </tr>
@@ -114,6 +105,7 @@ const getSignupConfirmationEmailHtml = (
   userName: string,
   confirmLink: string
 ): string => {
+  const currentYear = new Date().getFullYear();
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -127,28 +119,21 @@ const getSignupConfirmationEmailHtml = (
     <tr>
       <td align="center" style="padding: 40px 0;">
         <table role="presentation" style="width: 600px; max-width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);">
-          <!-- Header -->
           <tr>
             <td style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding: 40px 40px 30px 40px; text-align: center;">
               <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600; letter-spacing: -0.5px;">BloomEdge Enterprises</h1>
               <p style="margin: 8px 0 0 0; color: rgba(255, 255, 255, 0.9); font-size: 14px;">Quality products delivered to your doorstep</p>
             </td>
           </tr>
-          
-          <!-- Content -->
           <tr>
             <td style="padding: 40px;">
               <h2 style="margin: 0 0 20px 0; color: #1f2937; font-size: 24px; font-weight: 600;">Welcome to BloomEdge!</h2>
-              
               <p style="margin: 0 0 20px 0; color: #4b5563; font-size: 16px; line-height: 1.6;">
                 Hello${userName ? ` ${userName}` : ''},
               </p>
-              
               <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px; line-height: 1.6;">
                 Thank you for signing up! Please confirm your email address by clicking the button below:
               </p>
-              
-              <!-- Button -->
               <table role="presentation" style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td align="center" style="padding: 10px 0 30px 0;">
@@ -158,21 +143,18 @@ const getSignupConfirmationEmailHtml = (
                   </td>
                 </tr>
               </table>
-              
               <p style="margin: 0 0 16px 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
                 If you didn't create an account with us, you can safely ignore this email.
               </p>
             </td>
           </tr>
-          
-          <!-- Footer -->
           <tr>
             <td style="background-color: #f9fafb; padding: 30px 40px; border-top: 1px solid #e5e7eb;">
               <p style="margin: 0 0 12px 0; color: #6b7280; font-size: 14px; text-align: center;">
                 Need help? Contact our support team
               </p>
               <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">
-                © ${new Date().getFullYear()} BloomEdge Enterprises. All rights reserved.
+                © ${currentYear} BloomEdge Enterprises. All rights reserved.
               </p>
             </td>
           </tr>
@@ -185,10 +167,32 @@ const getSignupConfirmationEmailHtml = (
   `;
 };
 
-const handler = async (req: Request): Promise<Response> => {
+async function sendEmailWithResend(apiKey: string, to: string, subject: string, html: string) {
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: "BloomEdge Enterprises <onboarding@resend.dev>",
+      to: [to],
+      subject,
+      html,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to send email");
+  }
+
+  return response.json();
+}
+
+Deno.serve(async (req: Request): Promise<Response> => {
   console.log("Email hook received request:", req.method);
 
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -198,17 +202,19 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Email hook payload:", JSON.stringify(payload, null, 2));
 
     const { user, email_data } = payload;
-    const { token_hash, redirect_to, email_action_type, site_url } = email_data;
+    const { token_hash, redirect_to, email_action_type } = email_data;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const resendApiKey = Deno.env.get("RESEND_API_KEY") ?? "";
     const userName = user.user_metadata?.full_name ?? "";
+
+    if (!resendApiKey) {
+      throw new Error("RESEND_API_KEY not configured");
+    }
 
     let subject = "";
     let html = "";
-    let confirmationLink = "";
-
-    // Build the confirmation/reset link
-    confirmationLink = `${supabaseUrl}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${redirect_to}`;
+    const confirmationLink = `${supabaseUrl}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${redirect_to}`;
 
     switch (email_action_type) {
       case "recovery":
@@ -222,7 +228,7 @@ const handler = async (req: Request): Promise<Response> => {
         break;
       case "magiclink":
         subject = "Your Login Link - BloomEdge Enterprises";
-        html = getPasswordResetEmailHtml(userName, confirmationLink); // Reuse template
+        html = getPasswordResetEmailHtml(userName, confirmationLink);
         break;
       default:
         subject = "BloomEdge Enterprises";
@@ -231,17 +237,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending email to:", user.email, "Type:", email_action_type);
 
-    const { error: sendError } = await resend.emails.send({
-      from: "BloomEdge Enterprises <onboarding@resend.dev>",
-      to: [user.email],
-      subject,
-      html,
-    });
-
-    if (sendError) {
-      console.error("Error sending email:", sendError);
-      throw sendError;
-    }
+    await sendEmailWithResend(resendApiKey, user.email, subject, html);
 
     console.log("Email sent successfully to:", user.email);
 
@@ -249,13 +245,13 @@ const handler = async (req: Request): Promise<Response> => {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error in email-hook function:", error);
     return new Response(
       JSON.stringify({
         error: {
-          http_code: error.code ?? 500,
-          message: error.message ?? "Unknown error",
+          http_code: 500,
+          message: error instanceof Error ? error.message : "Unknown error",
         },
       }),
       {
@@ -264,6 +260,4 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   }
-};
-
-serve(handler);
+});
