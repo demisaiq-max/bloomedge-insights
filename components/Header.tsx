@@ -11,6 +11,7 @@ const Header: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [cartBounce, setCartBounce] = useState(false);
   const prevCartCount = useRef(cartItemCount);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -182,11 +183,71 @@ const Header: React.FC = () => {
                   </span>
                 )}
               </Link>
-              <button className="lg:hidden text-gray-600 dark:text-gray-300">
-                <span className="material-icons-outlined">menu</span>
+              <button 
+                className="lg:hidden text-gray-600 dark:text-gray-300"
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+              >
+                <span className="material-icons-outlined">{showMobileMenu ? 'close' : 'menu'}</span>
               </button>
             </div>
           </div>
+          
+          {/* Mobile Navigation Menu */}
+          {showMobileMenu && (
+            <nav className="lg:hidden border-t border-gray-200 dark:border-gray-700 py-4">
+              <div className="flex flex-col space-y-4 font-medium text-sm text-gray-700 dark:text-gray-200">
+                <Link 
+                  to="/shop?category=Dairy" 
+                  className="hover:text-primary transition-colors px-4 py-2"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  DAIRY
+                </Link>
+                <Link 
+                  to="/shop?category=Pantry" 
+                  className="hover:text-primary transition-colors px-4 py-2"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  PANTRY
+                </Link>
+                <Link 
+                  to="/shop?category=Vegetables" 
+                  className="hover:text-primary transition-colors px-4 py-2"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  PRODUCE
+                </Link>
+                <Link 
+                  to="/shop?filter=organic" 
+                  className="hover:text-primary transition-colors px-4 py-2"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  ORGANIC
+                </Link>
+                <Link 
+                  to="/shop?filter=sale" 
+                  className="hover:text-primary transition-colors text-red-500 font-bold px-4 py-2"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  SALE
+                </Link>
+                
+                {isAdmin && (
+                  <>
+                    <div className="h-px bg-gray-200 dark:bg-gray-700 mx-4"></div>
+                    <Link 
+                      to="/admin/products" 
+                      className="flex items-center gap-2 text-gray-900 dark:text-white font-bold hover:text-primary transition-colors px-4 py-2"
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      <span className="material-icons-outlined text-lg">inventory_2</span>
+                      PRODUCT MANAGEMENT
+                    </Link>
+                  </>
+                )}
+              </div>
+            </nav>
+          )}
         </div>
       </header>
     </>
