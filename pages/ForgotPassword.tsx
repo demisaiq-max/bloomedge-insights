@@ -19,7 +19,9 @@ const ForgotPassword: React.FC = () => {
       return;
     }
 
-    const redirectUrl = `${window.location.origin}/#/reset-password`;
+    // Use the deployed URL for redirect to ensure proper token handling
+    const baseUrl = window.location.origin;
+    const redirectUrl = `${baseUrl}/#/reset-password`;
 
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       redirectTo: redirectUrl,

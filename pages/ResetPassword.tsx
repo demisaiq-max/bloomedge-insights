@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/src/integrations/supabase/client';
 
 const ResetPassword: React.FC = () => {
@@ -11,10 +11,34 @@ const ResetPassword: React.FC = () => {
   const [isValidSession, setIsValidSession] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    // Check if user came from a password reset link
-    const checkSession = async () => {
+    const handlePasswordRecovery = async () => {
+      // Parse tokens from URL - with HashRouter, tokens come after the hash
+      // The URL looks like: /#/reset-password?access_token=xxx&refresh_token=xxx&type=recovery
+      const searchParams = new URLSearchParams(location.search);
+      const accessToken = searchParams.get('access_token');
+      const refreshToken = searchParams.get('refresh_token');
+      const type = searchParams.get('type');
+
+      if (accessToken && refreshToken && type === 'recovery') {
+        // Set the session using the tokens from the URL
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (!error) {
+          setIsValidSession(true);
+        } else {
+          console.error('Error setting session:', error);
+        }
+        setCheckingSession(false);
+        return;
+      }
+
+      // Check for existing session
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setIsValidSession(true);
@@ -22,18 +46,18 @@ const ResetPassword: React.FC = () => {
       setCheckingSession(false);
     };
 
-    // Listen for auth state changes (when user clicks the reset link)
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
+      if (event === 'PASSWORD_RECOVERY' && session) {
         setIsValidSession(true);
         setCheckingSession(false);
       }
     });
 
-    checkSession();
+    handlePasswordRecovery();
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [location.search]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
