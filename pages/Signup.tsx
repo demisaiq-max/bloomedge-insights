@@ -105,7 +105,7 @@ const Signup: React.FC = () => {
 
           {success ? (
             <div className="bg-green-50 border border-green-200 text-green-700 px-6 py-8 rounded-md text-center">
-              <span className="material-icons text-5xl mb-3 block text-green-500">mark_email_read</span>
+              <img src="/logo.png" alt="BloomEdge" className="h-12 mx-auto mb-3" />
               <h3 className="font-semibold text-xl mb-2">Check your inbox!</h3>
               <p className="text-sm mb-4">
                 We've sent a verification link to <strong>{email}</strong>. 
