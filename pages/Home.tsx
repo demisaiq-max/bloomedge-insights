@@ -14,6 +14,14 @@ import brandBoursin from '@/src/assets/brand-boursin.jpeg';
 import brandBridel from '@/src/assets/brand-bridel.jpeg';
 import brandElleVire from '@/src/assets/brand-elle-vire.jpeg';
 import brandFletcher from '@/src/assets/brand-fletcher.jpeg';
+import brandGermania from '@/src/assets/brand-germania.jpeg';
+import brandIleDeFrance from '@/src/assets/brand-ile-de-france.jpeg';
+import brandMargaretRiver from '@/src/assets/brand-margaret-river.jpeg';
+import brandNorbest from '@/src/assets/brand-norbest.jpeg';
+import brandTajima from '@/src/assets/brand-tajima.jpeg';
+import brandPrestageFarms from '@/src/assets/brand-prestage-farms.jpeg';
+import brandSoignon from '@/src/assets/brand-soignon.jpeg';
+import brandPresident from '@/src/assets/brand-president.jpeg';
 import { supabase } from '../src/integrations/supabase/client';
 
 // Reusable Product Carousel Component
@@ -223,6 +231,14 @@ const Home: React.FC = () => {
                     <img src={brandBridel} alt="Bridel" className="w-full h-16 object-contain" />
                     <img src={brandElleVire} alt="Elle & Vire Professionnel" className="w-full h-16 object-contain" />
                     <img src={brandFletcher} alt="Fletcher" className="w-full h-16 object-contain" />
+                    <img src={brandGermania} alt="Villa Germania" className="w-full h-16 object-contain" />
+                    <img src={brandIleDeFrance} alt="Ile de France" className="w-full h-16 object-contain" />
+                    <img src={brandMargaretRiver} alt="Margaret River Wagyu Beef" className="w-full h-16 object-contain" />
+                    <img src={brandNorbest} alt="Norbest" className="w-full h-16 object-contain" />
+                    <img src={brandTajima} alt="Tajima Australian Grainfed Wagyu" className="w-full h-16 object-contain" />
+                    <img src={brandPrestageFarms} alt="Prestage Farms" className="w-full h-16 object-contain" />
+                    <img src={brandSoignon} alt="Soignon" className="w-full h-16 object-contain" />
+                    <img src={brandPresident} alt="Président" className="w-full h-16 object-contain" />
                   </div>
                 </Link>
              </div>
