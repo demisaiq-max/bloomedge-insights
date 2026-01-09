@@ -4,7 +4,16 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useStore } from '../context/StoreContext';
 import { Product } from '../types';
-import brandLogos from '@/src/assets/brand-logos.png';
+import brandCallebaut from '@/src/assets/brand-callebaut.jpeg';
+import brandAmbrosi from '@/src/assets/brand-ambrosi.jpeg';
+import brandAmh from '@/src/assets/brand-amh.jpeg';
+import brandFarmersChoice from '@/src/assets/brand-farmers-choice.jpeg';
+import brandMidfield from '@/src/assets/brand-midfield.jpeg';
+import brandBeefCity from '@/src/assets/brand-beef-city.jpeg';
+import brandBoursin from '@/src/assets/brand-boursin.jpeg';
+import brandBridel from '@/src/assets/brand-bridel.jpeg';
+import brandElleVire from '@/src/assets/brand-elle-vire.jpeg';
+import brandFletcher from '@/src/assets/brand-fletcher.jpeg';
 import { supabase } from '../src/integrations/supabase/client';
 
 // Reusable Product Carousel Component
@@ -201,9 +210,20 @@ const Home: React.FC = () => {
               </div>
             </div>
             
-             <div className="w-full max-w-2xl mx-auto">
-                <Link to="/shop" className="block bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-3xl p-8 shadow-sm border border-white/50 hover:scale-[1.02] transition-transform duration-300">
-                  <img src={brandLogos} alt="Our Partner Brands - Almarai, Latbri, KraftHeinz, Galbani, Frico" className="w-full h-auto object-contain" />
+             <div className="w-full max-w-4xl mx-auto">
+                <Link to="/shop" className="block bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-white/50 hover:scale-[1.01] transition-transform duration-300">
+                  <div className="grid grid-cols-5 gap-4 items-center">
+                    <img src={brandCallebaut} alt="Callebaut" className="w-full h-16 object-contain" />
+                    <img src={brandAmbrosi} alt="Ambrosi" className="w-full h-16 object-contain" />
+                    <img src={brandAmh} alt="AMH" className="w-full h-16 object-contain" />
+                    <img src={brandFarmersChoice} alt="Farmer's Choice" className="w-full h-16 object-contain" />
+                    <img src={brandMidfield} alt="The Midfield Group" className="w-full h-16 object-contain" />
+                    <img src={brandBeefCity} alt="Beef City Black" className="w-full h-16 object-contain" />
+                    <img src={brandBoursin} alt="Boursin" className="w-full h-16 object-contain" />
+                    <img src={brandBridel} alt="Bridel" className="w-full h-16 object-contain" />
+                    <img src={brandElleVire} alt="Elle & Vire Professionnel" className="w-full h-16 object-contain" />
+                    <img src={brandFletcher} alt="Fletcher" className="w-full h-16 object-contain" />
+                  </div>
                 </Link>
              </div>
           </div>
