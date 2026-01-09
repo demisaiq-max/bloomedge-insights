@@ -22,6 +22,8 @@ import brandTajima from '@/src/assets/brand-tajima.jpeg';
 import brandPrestageFarms from '@/src/assets/brand-prestage-farms.jpeg';
 import brandSoignon from '@/src/assets/brand-soignon.jpeg';
 import brandPresident from '@/src/assets/brand-president.jpeg';
+import brandSweetBLaban from '@/src/assets/brand-sweet-b-laban.png';
+import brandAlmarai from '@/src/assets/brand-almarai.png';
 import { supabase } from '../src/integrations/supabase/client';
 
 // Reusable Product Carousel Component
@@ -239,6 +241,8 @@ const Home: React.FC = () => {
                     <img src={brandPrestageFarms} alt="Prestage Farms" className="w-full h-16 object-contain" />
                     <img src={brandSoignon} alt="Soignon" className="w-full h-16 object-contain" />
                     <img src={brandPresident} alt="Président" className="w-full h-16 object-contain" />
+                    <img src={brandSweetBLaban} alt="Sweet B. Laban" className="w-full h-16 object-contain" />
+                    <img src={brandAlmarai} alt="Almarai" className="w-full h-16 object-contain" />
                   </div>
                 </Link>
              </div>
